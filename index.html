@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bezelx Global | Nexus Receiver V3.5</title>
+    <title>Bezelx Global | Nexus Receiver V4.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -15,7 +15,7 @@
             --neon-purple: #9d00ff;
             --neon-amber: #ffaa00;
             --bg-dark: #050505;
-            --panel-bg: rgba(8, 8, 12, 0.95);
+            --panel-bg: rgba(8, 8, 12, 0.96);
         }
 
         body {
@@ -49,7 +49,7 @@
         #canvas-container {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%; z-index: 1;
-            opacity: 0.2; pointer-events: none;
+            opacity: 0.15; pointer-events: none;
         }
 
         .app-container {
@@ -62,14 +62,14 @@
         @media (min-width: 768px) {
             .app-container {
                 display: grid;
-                grid-template-columns: 350px 1fr;
+                grid-template-columns: 360px 1fr;
                 grid-template-rows: 64px 1fr 40px;
             }
         }
 
         .panel {
             background: var(--panel-bg);
-            backdrop-filter: blur(30px);
+            backdrop-filter: blur(40px);
             display: flex; flex-direction: column;
             overflow: hidden;
             border: 1px solid rgba(0, 242, 255, 0.05);
@@ -78,11 +78,12 @@
         .sidebar { order: 2; flex: 1; border-right: 1px solid rgba(255,255,255,0.03); }
         @media (min-width: 768px) { .sidebar { grid-row: 2; grid-column: 1; order: unset; } }
         
-        .nav-tabs { display: flex; padding: 12px; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-tabs { display: flex; padding: 12px; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow-x: auto; scrollbar-width: none; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
 
         .tab-trigger {
-            flex: 1; padding: 10px 4px; font-size: 9px; text-transform: uppercase;
-            letter-spacing: 1.5px; border: 1px solid rgba(255,255,255,0.05);
+            flex: 1; padding: 10px 8px; font-size: 8px; text-transform: uppercase;
+            letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.05);
             color: #555; transition: all 0.3s; cursor: pointer; text-align: center;
         }
         .tab-trigger.active {
@@ -97,7 +98,6 @@
             background: rgba(0,0,0,0.3); color: #555; cursor: pointer; transition: all 0.2s;
         }
         .filter-btn.active { border-color: var(--neon-blue); color: var(--neon-blue); background: rgba(0, 242, 255, 0.05); }
-        .filter-btn.active.fav { border-color: var(--neon-amber); color: var(--neon-amber); }
 
         .channel-list { flex: 1; overflow-y: auto; padding: 12px; }
 
@@ -122,7 +122,7 @@
         #viewport-container {
             width: 100%; aspect-ratio: 16/9; background: #000; position: relative;
             border-radius: 4px; overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
             display: flex; align-items: center; justify-content: center;
             border: 1px solid rgba(0, 242, 255, 0.1);
         }
@@ -150,8 +150,8 @@
             background: #444; display: inline-block;
             margin-right: 6px; transition: background 0.3s;
         }
-        .status-online { background: var(--neon-blue) !important; box-shadow: 0 0 8px var(--neon-blue); }
-        .status-probing { background: var(--neon-amber) !important; box-shadow: 0 0 8px var(--neon-amber); animation: pulse 1s infinite; }
+        .status-online { background: var(--neon-blue) !important; box-shadow: 0 0 10px var(--neon-blue); }
+        .status-probing { background: var(--neon-amber) !important; box-shadow: 0 0 10px var(--neon-amber); animation: pulse 1s infinite; }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
@@ -164,7 +164,7 @@
     <div id="loader-screen">
         <div class="mono text-[8px] md:text-[10px] tracking-[0.5em] text-cyan-500 uppercase mb-4 animate-pulse">Establishing Nexus Downlink</div>
         <div class="load-bar"><div id="load-progress" class="load-progress"></div></div>
-        <div id="load-status" class="mono text-[8px] text-gray-500 mt-4 uppercase">Parsing API Manifests...</div>
+        <div id="load-status" class="mono text-[8px] text-gray-500 mt-4 uppercase">Synchronizing Global Node Manifests...</div>
     </div>
 
     <div id="canvas-container"></div>
@@ -176,8 +176,8 @@
             </div>
             <div class="flex items-center gap-4 md:gap-6">
                 <div class="text-right hidden sm:block">
-                    <div class="text-[8px] text-gray-600 uppercase mono">API_STATUS</div>
-                    <div id="auth-indicator" class="text-[9px] text-emerald-400 mono">UPLINK_STABLE</div>
+                    <div class="text-[8px] text-gray-600 uppercase mono">UPLINK_STATUS</div>
+                    <div id="auth-indicator" class="text-[9px] text-emerald-400 mono">ACTIVE_MESH</div>
                 </div>
                 <div id="sys-clock" class="text-sm md:text-xl font-light mono tabular-nums">00:00:00</div>
             </div>
@@ -190,10 +190,10 @@
                 <div onclick="setCategory('news')" id="tab-news" class="tab-trigger">News</div>
             </nav>
             <div class="px-3 pt-3 flex flex-col gap-2">
-                <input type="text" id="search-box" placeholder="Scan Nodes..." class="w-full bg-black/50 border border-white/5 p-2.5 text-[10px] mono text-cyan-500 outline-none focus:border-cyan-500/50 rounded-sm">
+                <input type="text" id="search-box" placeholder="Scan nodes (Live Search)..." class="w-full bg-black/50 border border-white/5 p-2.5 text-[10px] mono text-cyan-500 outline-none focus:border-cyan-500/50 rounded-sm">
                 <div class="flex gap-2">
-                    <button id="toggle-streams" onclick="toggleStreamsOnly()" class="filter-btn flex-grow">Live Only</button>
-                    <button id="toggle-favs" onclick="toggleFavsOnly()" class="filter-btn fav flex-grow">Favorites</button>
+                    <button id="toggle-streams" onclick="toggleStreamsOnly()" class="filter-btn flex-grow">Active Nodes</button>
+                    <button id="toggle-favs" onclick="toggleFavsOnly()" class="filter-btn flex-grow">Favorites</button>
                 </div>
             </div>
             <div id="channel-list" class="channel-list">
@@ -209,52 +209,64 @@
                 <div id="signal-info" class="absolute top-2 left-2 md:top-4 md:left-4 pointer-events-none bg-black/70 p-2.5 rounded-sm backdrop-blur-md border border-white/5">
                     <div class="flex items-center mb-1">
                         <span class="status-dot" id="stream-dot"></span>
-                        <span id="playing-title" class="text-[9px] md:text-xs uppercase font-bold text-white mono tracking-wider">Idle Mode</span>
+                        <span id="playing-title" class="text-[9px] md:text-xs uppercase font-bold text-white mono tracking-wider">Awaiting Link</span>
                     </div>
-                    <div id="playing-id" class="text-[7px] md:text-[9px] text-gray-500 mono">NO_ACTIVE_DOWNLINK</div>
+                    <div id="playing-id" class="text-[7px] md:text-[9px] text-gray-500 mono">NO_CARRIER_DETECTED</div>
                 </div>
             </div>
 
             <div class="mt-4 flex justify-between items-start">
                 <div class="max-w-[70%]">
-                    <h2 id="detail-name" class="text-base md:text-xl font-semibold text-white truncate uppercase tracking-tight">Nexus Receiver 3.5</h2>
-                    <p id="detail-tags" class="text-[9px] md:text-xs text-cyan-800 mono mt-1 uppercase">Select a node to begin transmission</p>
+                    <h2 id="detail-name" class="text-base md:text-xl font-semibold text-white truncate uppercase tracking-tight">Nexus Receiver 4.1</h2>
+                    <p id="detail-tags" class="text-[9px] md:text-xs text-cyan-800 mono mt-1 uppercase">Global Node Relay // v4.1 STABLE</p>
                 </div>
                 <div class="flex flex-col items-end gap-1 md:gap-2">
                     <div class="flex gap-1 md:gap-2">
-                        <div class="px-2 py-1 bg-white/5 border border-white/10 text-[7px] md:text-[8px] mono uppercase">HLS_v5</div>
+                        <div class="px-2 py-1 bg-white/5 border border-white/10 text-[7px] md:text-[8px] mono uppercase">HLS_v11</div>
                         <div id="stream-quality" class="px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 text-[7px] md:text-[8px] text-cyan-400 mono uppercase">Auto</div>
                     </div>
-                    <div id="attempt-info" class="text-[8px] md:text-[9px] text-gray-600 mono uppercase">Handshake Ready</div>
+                    <div id="attempt-info" class="text-[8px] md:text-[9px] text-gray-600 mono uppercase">F: Fullscreen | Live Node Discovery</div>
                 </div>
             </div>
         </main>
 
         <footer class="panel flex items-center justify-between px-6 border-t border-white/5 text-[8px] mono text-gray-800 uppercase tracking-[0.3em]">
-            <div>© BEZELX GLOBAL // NEXUS INFRASTRUCTURE</div>
+            <div>© BEZELX GLOBAL // NEXUS RELIANCE UPLINK</div>
             <div class="flex gap-10">
                 <span>BUFFER: <span id="buffer-stat" class="text-cyan-900">0.0S</span></span>
-                <span>REG: GLOBAL_RELAY_01</span>
+                <span>NODE: GLOBAL_NX_RELAY</span>
             </div>
         </footer>
     </div>
 
     <script>
-        // API Configuration
         let channelsData = [];
         let streamsData = [];
+        
+        // Resilience Gateway: Production endpoints for core nodes
+        const ResilienceGateway = [
+            { id: 'bein-xtra', name: 'beIN SPORTS XTRA', url: 'https://beinsports-xtra-samsung-us.amagi.tv/playlist.m3u8' },
+            { id: 'bein-xtra-es', name: 'beIN SPORTS XTRA en Español', url: 'https://beinsports-xtra-esp-samsung-us.amagi.tv/playlist.m3u8' },
+            { id: 'mbc2-hd', name: 'MBC 2 HD', url: 'https://shls-mbc2-prod-dub.mbc.net/out/v1/a29779df53714df18889758713f04467/index.m3u8' },
+            { id: 'mbc3-hd', name: 'MBC 3 HD', url: 'https://shls-mbc3-prod-dub.mbc.net/out/v1/7c2e0c4f8d4e4c25964f40f09a5b1a32/index.m3u8' },
+            { id: 'mbc-max-hd', name: 'MBC Max HD', url: 'https://shls-mbcmax-prod-dub.mbc.net/out/v1/095038c1a6e54f9889736881754f923b/index.m3u8' },
+            { id: 'fox-news-us', name: 'Fox News', url: 'https://fox-foxnewsnow-2-us.samsung.wurl.com/manifest/playlist.m3u8' },
+            { id: 'bbc-news-uk', name: 'BBC News', url: 'https://vs-hls-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/t=3840/v=pv14/b=5070016/main.m3u8' },
+            { id: 'france24-en', name: 'France 24 English', url: 'https://static.france24.com/live/F24_EN_LO_HLS/live_tv.m3u8' }
+        ];
+
         let hls = null;
         let currentCategory = 'sports';
         let streamsOnly = false;
         let favsOnly = false;
         let favorites = new Set(JSON.parse(localStorage.getItem('bezelx_favs') || '[]'));
         
-        // Tuning State
         let currentProbingIndex = 0;
         let currentAvailableStreams = [];
         let probeTimeout = null;
 
         const video = document.getElementById('main-video');
+        const searchBox = document.getElementById('search-box');
 
         async function fetchGlobalAPI() {
             try {
@@ -265,8 +277,8 @@
                 channelsData = await channelsRes.json();
                 streamsData = await streamsRes.json();
             } catch (e) {
-                console.error("Critical API Failure", e);
-                document.getElementById('load-status').innerText = "FAILOVER REQUIRED...";
+                console.error("Link Error", e);
+                document.getElementById('load-status').innerText = "FAILOVER ENGAGED...";
             }
         }
 
@@ -275,25 +287,33 @@
             
             let filtered = [];
             if (category === 'sports') {
-                const sportKeys = ['supersport', 'sky sport', 'espn', 'bein', 'nba', 'premier league', 'football', 'tnt sport', 'laliga', 'serie a', 'f1'];
+                const sportKeys = ['bein', 'supersport', 'sky sport', 'espn', 'nba', 'premier league', 'football', 'tnt sport', 'laliga', 'serie a', 'f1', 'ufc'];
                 filtered = channelsData.filter(c => {
                     const n = (c.name || '').toLowerCase();
                     return sportKeys.some(k => n.includes(k));
-                }).slice(0, 100);
+                });
+                filtered.sort((a, b) => {
+                    const aBein = (a.name || '').toLowerCase().includes('bein') ? -1 : 1;
+                    const bBein = (b.name || '').toLowerCase().includes('bein') ? -1 : 1;
+                    if (aBein !== bBein) return aBein - bBein;
+                    return (streamsData.filter(s => s.channel === b.id).length) - (streamsData.filter(s => s.channel === a.id).length);
+                });
+                filtered = filtered.slice(0, 200);
             } 
             else if (category === 'entertainment') {
-                const entKeys = ['mbc 2', 'mbc 3', 'mbc max', 'disney', 'nick', 'cartoon network', 'mtv', 'hbo'];
+                const entKeys = ['mbc 2', 'mbc 3', 'mbc max', 'disney', 'nick', 'cartoon network', 'mtv', 'hbo', 'amc'];
                 filtered = channelsData.filter(c => {
                     const n = (c.name || '').toLowerCase();
                     return entKeys.some(k => n.includes(k));
                 });
             }
             else if (category === 'news') {
-                const newsKeys = ['bbc world', 'bbc news', 'fox news', 'cnn', 'france 24', 'al jazeera', 'reuters', 'bloomberg'];
+                const newsKeys = ['news', 'bbc', 'fox', 'cnn', 'france 24', 'al jazeera', 'reuters', 'bloomberg', 'sky', 'abc'];
                 filtered = channelsData.filter(c => {
                     const n = (c.name || '').toLowerCase();
                     return newsKeys.some(k => n.includes(k));
                 });
+                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             }
 
             return filtered.filter(c => {
@@ -312,26 +332,24 @@
             );
 
             if (filtered.length === 0) {
-                list.innerHTML = '<div class="p-8 text-center text-[10px] mono text-gray-700">NO NODES FOUND</div>';
+                list.innerHTML = '<div class="p-8 text-center text-[10px] mono text-gray-700 uppercase">Scanning nodes...</div>';
                 return;
             }
 
             filtered.forEach(ch => {
                 const card = document.createElement('div');
                 card.className = 'channel-card';
-                card.onclick = () => startTuning(ch, card);
-                
+                card.onclick = () => startTuningSequence(ch, card);
                 const streams = streamsData.filter(s => s.channel === ch.id);
-                const statusColor = streams.length > 0 ? 'text-cyan-500' : 'text-gray-700';
                 const isFav = favorites.has(ch.id);
 
                 card.innerHTML = `
                     <div class="w-8 h-8 flex items-center justify-center bg-black/50 border border-white/5 rounded-sm overflow-hidden">
-                        ${ch.logo ? `<img src="${ch.logo}" class="w-full h-full object-contain opacity-70">` : `<span class="mono text-[8px] text-gray-800">U</span>`}
+                        ${ch.logo ? `<img src="${ch.logo}" class="w-full h-full object-contain opacity-70">` : `<span class="mono text-[8px] text-gray-800">RX</span>`}
                     </div>
                     <div class="overflow-hidden">
                         <div class="text-[10px] font-bold uppercase truncate text-white">${ch.name}</div>
-                        <div class="text-[7px] mono ${statusColor} truncate uppercase">${streams.length} STREAMS AVAILABLE</div>
+                        <div class="text-[7px] mono ${streams.length > 0 ? 'text-cyan-500' : 'text-gray-700'} truncate uppercase">${streams.length} NETWORK NODES</div>
                     </div>
                     <button onclick="toggleFavorite('${ch.id}', event)" class="fav-toggle ${isFav ? 'active' : ''}">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -346,56 +364,59 @@
             if (favorites.has(id)) favorites.delete(id);
             else favorites.add(id);
             localStorage.setItem('bezelx_favs', JSON.stringify([...favorites]));
-            renderList(document.getElementById('search-box').value);
+            renderList(searchBox.value);
         };
 
         window.toggleStreamsOnly = () => {
             streamsOnly = !streamsOnly;
             document.getElementById('toggle-streams').classList.toggle('active');
-            renderList(document.getElementById('search-box').value);
+            renderList(searchBox.value);
         };
 
         window.toggleFavsOnly = () => {
             favsOnly = !favsOnly;
             document.getElementById('toggle-favs').classList.toggle('active');
-            renderList(document.getElementById('search-box').value);
+            renderList(searchBox.value);
         };
 
-        function startTuning(ch, el) {
+        function startTuningSequence(ch, el) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             if (el) el.classList.add('active');
 
-            currentAvailableStreams = streamsData.filter(s => s.channel === ch.id);
+            const iptvNodes = streamsData.filter(s => s.channel === ch.id);
+            const resilienceNodes = ResilienceGateway.filter(r => 
+                ch.id.includes(r.id) || (ch.name && ch.name.toLowerCase().includes(r.name.toLowerCase()))
+            ).map(r => ({ url: r.url, channel: ch.id }));
+            
+            currentAvailableStreams = [...resilienceNodes, ...iptvNodes];
+
             if (currentAvailableStreams.length === 0) {
-                updateUIForFailure(ch, "OFFLINE");
+                updateUIState(ch, "SIGNAL_NOT_FOUND", "OFFLINE");
                 return;
             }
 
-            // Sort by HLS priority
-            currentAvailableStreams.sort((a, b) => {
-                if (a.url.includes('m3u8')) return -1;
-                if (b.url.includes('m3u8')) return 1;
-                return 0;
-            });
+            currentAvailableStreams.sort((a, b) => (a.url.includes('m3u8') ? -1 : 1));
 
             currentProbingIndex = 0;
             document.getElementById('playing-title').innerText = ch.name;
-            document.getElementById('playing-id').innerText = `UPLINK: ${ch.id.toUpperCase()}`;
+            document.getElementById('playing-id').innerText = `NODE: ${ch.id.toUpperCase()}`;
             document.getElementById('detail-name').innerText = ch.name;
-            document.getElementById('detail-tags').innerText = `${ch.categories?.join(', ') || 'General'} | ${ch.country || 'Global'}`;
+            document.getElementById('detail-tags').innerText = `${ch.country || 'Global'} | ${ch.categories?.join(', ') || 'General'}`;
             
-            performHandshake(ch);
+            executeHandshake(ch);
         }
 
-        function performHandshake(ch) {
+        function executeHandshake(ch) {
             if (currentProbingIndex >= currentAvailableStreams.length) {
-                updateUIForFailure(ch, "NODE_FAILURE");
+                updateUIState(ch, "RETRYING_MESH...", "NODE_CYCLE");
+                currentProbingIndex = 0;
+                setTimeout(() => executeHandshake(ch), 2000);
                 return;
             }
 
             const stream = currentAvailableStreams[currentProbingIndex];
             const attemptInfo = document.getElementById('attempt-info');
-            attemptInfo.innerText = `PROBING NODE ${currentProbingIndex + 1}/${currentAvailableStreams.length}`;
+            attemptInfo.innerText = `LINKING NODE ${currentProbingIndex + 1}/${currentAvailableStreams.length}`;
             attemptInfo.style.color = "var(--neon-amber)";
 
             document.getElementById('player-shimmer').classList.remove('hidden');
@@ -405,58 +426,42 @@
             if (hls) { hls.destroy(); hls = null; }
             clearTimeout(probeTimeout);
 
-            // Proxy logic to handle secure context blocks
             let finalUrl = stream.url;
             if (finalUrl.startsWith('http://')) {
                 finalUrl = `https://corsproxy.io/?url=${encodeURIComponent(finalUrl)}`;
             }
 
-            // Timeout if stream hangs without triggering HLS error
             probeTimeout = setTimeout(() => {
-                console.warn("Probe timeout on index", currentProbingIndex);
-                nextAttempt(ch);
-            }, 8000);
+                console.warn("Handshake Timed Out on Node", currentProbingIndex);
+                nextIteration(ch);
+            }, 7000);
 
             if (Hls.isSupported()) {
                 hls = new Hls({ 
                     enableWorker: true, 
                     capLevelToPlayerSize: true,
-                    manifestLoadingMaxRetry: 1,
-                    levelLoadingMaxRetry: 1
+                    manifestLoadingMaxRetry: 1
                 });
                 hls.loadSource(finalUrl);
                 hls.attachMedia(video);
                 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     clearTimeout(probeTimeout);
-                    video.play().then(() => {
-                        onSuccess();
-                    }).catch(() => {
-                        // Sometimes browser blocks auto-play even after manifest
-                        onSuccess(); 
-                    });
+                    video.play().then(onSuccess).catch(onSuccess);
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) {
                         clearTimeout(probeTimeout);
-                        nextAttempt(ch);
+                        nextIteration(ch);
                     }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = finalUrl;
-                video.addEventListener('loadedmetadata', function successListener() {
-                    clearTimeout(probeTimeout);
-                    video.play();
-                    onSuccess();
-                    video.removeEventListener('loadedmetadata', successListener);
-                }, { once: true });
-                
-                video.addEventListener('error', function errorListener() {
-                    clearTimeout(probeTimeout);
-                    nextAttempt(ch);
-                    video.removeEventListener('error', errorListener);
-                }, { once: true });
+                const onLoaded = () => { clearTimeout(probeTimeout); video.play(); onSuccess(); };
+                const onError = () => { clearTimeout(probeTimeout); nextIteration(ch); };
+                video.addEventListener('loadedmetadata', onLoaded, { once: true });
+                video.addEventListener('error', onError, { once: true });
             }
         }
 
@@ -469,17 +474,15 @@
             attemptInfo.style.color = "var(--neon-blue)";
         }
 
-        function nextAttempt(ch) {
+        function nextIteration(ch) {
             currentProbingIndex++;
-            performHandshake(ch);
+            executeHandshake(ch);
         }
 
-        function updateUIForFailure(ch, msg) {
-            document.getElementById('playing-title').innerText = msg;
+        function updateUIState(ch, title, msg) {
+            document.getElementById('playing-title').innerText = title;
             document.getElementById('stream-dot').className = "status-dot";
-            document.getElementById('attempt-info').innerText = "HANDSHAKE FAILED";
-            document.getElementById('attempt-info').style.color = "rgba(255,0,0,0.5)";
-            document.getElementById('player-shimmer').classList.add('hidden');
+            document.getElementById('attempt-info').innerText = msg;
         }
 
         window.setCategory = (cat) => {
@@ -489,35 +492,44 @@
             renderList();
         };
 
+        searchBox.addEventListener('input', (e) => {
+            renderList(e.target.value);
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'f' && document.activeElement !== searchBox) {
+                if (!document.fullscreenElement) {
+                    video.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
         async function initApp() {
             const steps = [
-                { p: 20, s: "Synthesizing Neural Gateways..." },
-                { p: 60, s: "Synchronizing Global API Nodes..." },
-                { p: 90, s: "Validating Handshake Protocols..." },
-                { p: 100, s: "Uplink Secure." }
+                { p: 30, s: "Synthesizing Neural Gateways..." },
+                { p: 70, s: "Calibrating Global Node Manifests..." },
+                { p: 100, s: "Nexus V4.1 Online." }
             ];
 
-            const progressEl = document.getElementById('load-progress');
-            const statusEl = document.getElementById('load-status');
-
-            const apiPromise = fetchGlobalAPI();
+            const pEl = document.getElementById('load-progress');
+            const sEl = document.getElementById('load-status');
+            const apiInit = fetchGlobalAPI();
 
             for (const step of steps) {
-                progressEl.style.width = step.p + "%";
-                statusEl.innerText = step.s;
-                await new Promise(r => setTimeout(r, 600));
+                pEl.style.width = step.p + "%";
+                sEl.innerText = step.s;
+                await new Promise(r => setTimeout(r, 400));
             }
 
-            await apiPromise;
-            
+            await apiInit;
             document.getElementById('loader-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('loader-screen').classList.add('hidden');
                 renderList();
-            }, 1000);
+            }, 800);
         }
-
-        document.getElementById('search-box').oninput = (e) => renderList(e.target.value);
 
         window.onload = () => {
             const scene = new THREE.Scene();
@@ -525,17 +537,16 @@
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
-            const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 2), new THREE.MeshPhongMaterial({ color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.05 }));
+            const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(12, 2), new THREE.MeshPhongMaterial({ color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.05 }));
             scene.add(mesh);
             const light = new THREE.PointLight(0x00f2ff, 1);
             light.position.set(10, 10, 10);
             scene.add(light);
-            camera.position.z = 20;
+            camera.position.z = 25;
 
             function animate() {
                 requestAnimationFrame(animate);
-                mesh.rotation.x += 0.001;
-                mesh.rotation.y += 0.002;
+                mesh.rotation.y += 0.001;
                 renderer.render(scene, camera);
             }
             animate();
