@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bezelx Global | Universal Receiver</title>
+    <title>Bezelx Global | Universal Receiver V2.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -19,40 +19,29 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--bg-dark);
             color: white;
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            height: 100vh; width: 100vw;
         }
 
         .mono { font-family: 'Space Mono', monospace; }
 
         #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1;
         }
 
         .ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 20;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 20;
             pointer-events: none;
             display: grid;
             grid-template-columns: 350px 1fr 350px;
             grid-template-rows: auto 1fr auto;
-            padding: 20px;
-            gap: 20px;
+            padding: 20px; gap: 20px;
         }
 
         .ui-element {
@@ -66,220 +55,65 @@
             z-index: 30;
         }
 
-        #waterfall {
-            width: 100%;
-            height: 100px;
-            background: #000;
-            border: 1px solid #111;
-            image-rendering: pixelated;
-        }
+        #waterfall { width: 100%; height: 100px; background: #000; border: 1px solid #111; image-rendering: pixelated; }
 
-        .active-station {
-            border-color: var(--neon-blue) !important;
-            background: rgba(0, 242, 255, 0.15) !important;
-        }
+        .active-station { border-color: var(--neon-blue) !important; background: rgba(0, 242, 255, 0.15) !important; }
 
         #power-overlay {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
         }
 
-        .station-item {
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        
-        .station-item:hover {
-            border-color: rgba(0, 242, 255, 0.3);
-            background: rgba(255,255,255,0.02);
-        }
+        .station-item { border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s ease; position: relative; }
+        .station-item:hover { border-color: rgba(0, 242, 255, 0.3); background: rgba(255,255,255,0.02); }
 
         .search-input {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            color: var(--neon-blue);
-            font-family: 'Space Mono', monospace;
-            font-size: 11px;
-            padding: 10px 12px;
-            width: 100%;
-            outline: none;
-            pointer-events: auto;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 242, 255, 0.2);
+            color: var(--neon-blue); font-family: 'Space Mono', monospace; font-size: 11px;
+            padding: 10px 12px; width: 100%; outline: none;
         }
 
         .tab-btn {
-            position: relative;
-            padding: 8px 16px;
-            font-size: 10px;
-            font-family: 'Space Mono', monospace;
-            letter-spacing: 0.2em;
-            color: #444;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            position: relative; padding: 8px 16px; font-size: 10px; font-family: 'Space Mono', monospace;
+            letter-spacing: 0.2em; color: #444; border-bottom: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;
         }
-        .tab-btn.active {
-            color: var(--neon-blue);
-            border-bottom-color: var(--neon-blue);
-            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
-        }
-        .tab-btn.sports-active {
-            color: var(--neon-purple);
-            border-bottom-color: var(--neon-purple);
-            text-shadow: 0 0 10px rgba(188, 19, 254, 0.5);
-        }
+        .tab-btn.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+        .tab-btn.sports-active { color: var(--neon-purple); border-bottom-color: var(--neon-purple); text-shadow: 0 0 10px rgba(188, 19, 254, 0.5); }
 
         #tv-viewport-container {
-            width: 100%;
-            background: #000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            pointer-events: auto;
-            overflow: hidden;
+            width: 100%; background: #000; display: none; justify-content: center; align-items: center;
+            position: relative; border: 1px solid rgba(0, 242, 255, 0.2); pointer-events: auto; overflow: hidden;
         }
         
-        #video-player {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        #video-player { width: 100%; height: 100%; object-fit: contain; }
 
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
         
         .hidden { display: none !important; }
 
-        input::placeholder {
-            color: rgba(0, 242, 255, 0.3);
-        }
-
         .tv-overlay-tag {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(239, 68, 68, 0.8);
-            color: white;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 2px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            pointer-events: none;
-            z-index: 40;
+            position: absolute; top: 10px; left: 10px; background: rgba(239, 68, 68, 0.8);
+            color: white; font-size: 8px; font-weight: bold; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; z-index: 40;
         }
 
-        .fav-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #333;
-            transition: all 0.2s;
-            padding: 4px;
-            z-index: 50;
-        }
-        .fav-btn.active {
-            color: var(--neon-amber);
-        }
+        .fav-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #333; transition: all 0.2s; padding: 4px; z-index: 50; }
+        .fav-btn.active { color: var(--neon-amber); }
 
-        .filter-toggle {
-            font-size: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 6px 8px;
-            border: 1px solid #222;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(0,0,0,0.3);
-        }
-        .filter-toggle.active {
-            background: rgba(0, 242, 255, 0.1);
-            border-color: var(--neon-blue);
-            color: var(--neon-blue);
-        }
+        .filter-toggle { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 6px 8px; border: 1px solid #222; cursor: pointer; background: rgba(0,0,0,0.3); }
+        .filter-toggle.active { background: rgba(0, 242, 255, 0.1); border-color: var(--neon-blue); color: var(--neon-blue); }
 
-        /* Viewport Fullscreen Overrides */
-        .fullscreen-active {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-            background: black !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-            display: flex !important;
-        }
+        .fullscreen-active { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999 !important; background: black !important; padding: 0 !important; display: flex !important; }
+        #exit-fullscreen-btn { position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px 20px; font-family: 'Space Mono', monospace; font-size: 10px; cursor: pointer; display: none; backdrop-filter: blur(10px); }
+        .fullscreen-active #exit-fullscreen-btn { display: block; }
+
+        .source-tag { font-size: 7px; padding: 1px 3px; border-radius: 1px; background: rgba(255,255,255,0.05); color: #555; margin-left: 4px; }
+        .premium-tag { color: var(--neon-purple); font-weight: bold; text-shadow: 0 0 5px rgba(188, 19, 254, 0.3); }
         
-        #exit-fullscreen-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 10px 20px;
-            font-family: 'Space Mono', monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            display: none;
-            backdrop-filter: blur(10px);
-        }
-        
-        .fullscreen-active #exit-fullscreen-btn {
-            display: block;
-        }
-
-        .fullscreen-active #video-player {
-            object-fit: contain;
-            width: 100%;
-            height: 100%;
-        }
-
-        .source-tag {
-            font-size: 7px;
-            padding: 1px 3px;
-            border-radius: 1px;
-            background: rgba(255,255,255,0.05);
-            color: #555;
-            margin-left: 4px;
-        }
-
-        .premium-tag {
-            color: var(--neon-purple);
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(188, 19, 254, 0.3);
-        }
-        
-        .quality-indicator {
-            height: 2px;
-            width: 100%;
-            margin-top: 4px;
-            background: #222;
-            overflow: hidden;
-        }
-        .quality-fill {
-            height: 100%;
-            background: var(--neon-green);
-            box-shadow: 0 0 5px var(--neon-green);
-        }
+        .quality-indicator { height: 2px; width: 100%; margin-top: 4px; background: #222; overflow: hidden; }
+        .quality-fill { height: 100%; background: var(--neon-green); box-shadow: 0 0 5px var(--neon-green); }
     </style>
 </head>
 <body>
@@ -288,10 +122,10 @@
 
     <div id="power-overlay">
         <div class="mb-6 flex flex-col items-center text-center">
-            <div id="boot-text" class="text-cyan-500 mono text-[10px] tracking-[0.5em] uppercase mb-10 animate-pulse">Initializing Premium Mesh Uplink</div>
+            <div id="boot-text" class="text-cyan-500 mono text-[10px] tracking-[0.5em] uppercase mb-10 animate-pulse">Initializing Global Mesh Resilience...</div>
             <button id="power-btn" class="group relative px-10 py-4 overflow-hidden border border-cyan-500/50 cursor-pointer">
                 <div class="absolute inset-0 bg-cyan-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                <span class="relative mono text-cyan-400 text-xs tracking-widest uppercase">Sync Mesh Nodes</span>
+                <span class="relative mono text-cyan-400 text-xs tracking-widest uppercase">Establish Link</span>
             </button>
         </div>
     </div>
@@ -300,7 +134,6 @@
     <audio id="live-audio-player" crossorigin="anonymous" preload="auto"></audio>
 
     <div class="ui-overlay">
-        <!-- Header -->
         <header class="ui-element col-span-3 flex justify-between items-center py-0 px-6 border-b border-cyan-500/20 h-14">
             <div class="flex items-center gap-6">
                 <div class="text-xl font-bold mono text-cyan-500 tracking-widest">BEZELX GLOBAL</div>
@@ -313,19 +146,18 @@
             <div class="flex gap-10 mono text-[10px] text-gray-500">
                 <div class="text-right">
                     <div class="uppercase opacity-40">Band Status</div>
-                    <div id="stream-status" class="text-cyan-400">MESH_READY</div>
+                    <div id="stream-status" class="text-cyan-400">READY</div>
                 </div>
                 <div id="current-time" class="text-right tabular-nums hidden md:block">00:00:00</div>
             </div>
         </header>
 
-        <!-- Sidebar Left: Explorer -->
         <aside class="ui-element flex flex-col gap-4 overflow-hidden">
             <div class="flex flex-col gap-3">
-                <h2 id="search-title" class="text-[9px] font-bold mono text-cyan-500 tracking-[0.2em] uppercase">Mesh Scanner</h2>
+                <h2 id="search-title" class="text-[9px] font-bold mono text-cyan-500 tracking-[0.2em] uppercase">Scanner</h2>
                 <input type="text" id="search-input" placeholder="Search across all nodes..." class="search-input" autocomplete="off">
                 <div class="flex gap-2">
-                    <button id="search-btn" onclick="triggerSearch()" class="flex-grow py-2 bg-cyan-950/30 border border-cyan-900 text-[10px] mono text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all cursor-pointer">RESCAN MESH</button>
+                    <button onclick="triggerSearch()" class="flex-grow py-2 bg-cyan-950/30 border border-cyan-900 text-[10px] mono text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all">RESCAN</button>
                 </div>
                 <div class="flex gap-2">
                     <button id="toggle-working" onclick="toggleWorkingFilter()" class="filter-toggle flex-grow">Stable Only</button>
@@ -335,16 +167,15 @@
 
             <div class="flex-grow flex flex-col overflow-hidden mt-2">
                 <h2 class="text-[9px] font-bold mono text-gray-500 mb-2 uppercase flex justify-between">
-                    <span>Signals Located</span>
+                    <span>Nodes Online</span>
                     <span id="result-count">0 nodes</span>
                 </h2>
                 <div id="frequency-list" class="space-y-1 overflow-y-auto flex-grow pr-1">
-                    <div class="p-8 text-center text-[10px] mono text-gray-600 italic">Connecting to satellites...</div>
+                    <div class="p-8 text-center text-[10px] mono text-gray-600 italic">Waiting for command...</div>
                 </div>
             </div>
         </aside>
 
-        <!-- Center: Geographic Viewport -->
         <main class="flex flex-col justify-end items-center pb-6 pointer-events-none relative overflow-hidden">
             <div class="bg-black/80 border border-cyan-500/10 p-5 rounded-sm min-w-[340px] text-center backdrop-blur-3xl shadow-2xl pointer-events-auto">
                 <div class="flex justify-center gap-1 mb-2">
@@ -352,24 +183,23 @@
                     <div class="w-1 h-3 bg-cyan-500/50"></div>
                     <div class="w-1 h-3 bg-cyan-500/20"></div>
                 </div>
-                <div id="active-station-name" class="text-lg font-light text-white mb-1 tracking-tight leading-tight uppercase">Carrier Offline</div>
-                <div id="active-station-tags" class="text-[8px] mono text-cyan-600 uppercase mb-3 truncate">Ready for Tuning</div>
+                <div id="active-station-name" class="text-lg font-light text-white mb-1 tracking-tight leading-tight uppercase">Tuning...</div>
+                <div id="active-station-tags" class="text-[8px] mono text-cyan-600 uppercase mb-3 truncate">Select a Signal</div>
                 <div id="coord-display" class="text-[9px] mono text-gray-500 py-1 border-t border-white/5 uppercase">COORDINATES: --.----, --.----</div>
             </div>
         </main>
 
-        <!-- Sidebar Right: Media Panel -->
         <aside class="ui-element flex flex-col gap-6 overflow-hidden">
             <div id="analytics-container" class="flex flex-col gap-6 h-full">
                 <div class="flex-grow">
                     <h2 class="text-[9px] font-bold mono text-cyan-500 mb-3 tracking-widest uppercase flex justify-between">
-                        <span>Signal Analytics</span>
+                        <span>Analytics</span>
                         <span id="bitrate-tag" class="text-cyan-900 uppercase">0 KBPS</span>
                     </h2>
                     <div id="spectrum-bars" class="flex items-end gap-[1px] h-28 bg-black/40 rounded p-1 overflow-hidden"></div>
                 </div>
                 <div class="border-t border-cyan-950 pt-4">
-                    <h2 class="text-[9px] font-bold mono text-cyan-500 mb-3 tracking-widest uppercase">Temporal Waterfall</h2>
+                    <h2 class="text-[9px] font-bold mono text-cyan-500 mb-3 tracking-widest uppercase">Waterfall</h2>
                     <canvas id="waterfall"></canvas>
                 </div>
             </div>
@@ -383,24 +213,23 @@
                     <video id="video-player" controls autoplay class="w-full h-full"></video>
                     <div id="live-indicator" class="tv-overlay-tag">Live</div>
                 </div>
-                <button id="fullscreen-btn" onclick="toggleFullscreen()" class="w-full py-3 border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 mono text-[10px] uppercase tracking-widest hover:bg-cyan-500 hover:text-black transition-all">Enable Fullscreen</button>
+                <button onclick="toggleFullscreen()" class="w-full py-3 border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 mono text-[10px] uppercase tracking-widest hover:bg-cyan-500 hover:text-black transition-all">Fullscreen</button>
             </div>
             
             <div class="mt-auto border-t border-cyan-950 pt-4">
                 <div class="flex justify-between text-[9px] mono text-amber-500 mb-2 uppercase font-bold">
-                    <span>Master Gain</span>
+                    <span>Gain</span>
                     <span id="vol-display">50%</span>
                 </div>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-amber-500 cursor-pointer">
             </div>
         </aside>
 
-        <!-- Footer -->
         <footer class="col-span-3 flex justify-between items-center px-4 py-1 text-[8px] mono text-gray-700 uppercase tracking-widest">
             <div>Link: Secure_Relay_Active</div>
             <div class="flex gap-4">
                 <span>Buffer: <span id="buffer-val" class="text-cyan-900">0.0s</span></span>
-                <span>Active Band: <span id="active-band" class="text-cyan-900 uppercase">RADIO</span></span>
+                <span>Band: <span id="active-band" class="text-cyan-900 uppercase">RADIO</span></span>
             </div>
         </footer>
     </div>
@@ -411,116 +240,68 @@
         const searchInput = document.getElementById('search-input');
         
         let audioCtx, analyser, sourceAudio, sourceVideo;
-        let isAudioInit = false;
-        let currentTab = 'radio';
-        let hls = null;
-        let tvDatabase = [];
-        let tvStreams = [];
-        let sportsDatabase = []; 
-        
-        let favorites = new Set();
-        let failedStations = new Set();
-        let showFavsOnly = false;
-        let showWorkingOnly = false;
-        let currentResults = [];
-        let isPseudoFullscreen = false;
-        let currentTvAttemptIndex = 0;
-        let currentAvailableStreams = [];
-        let probeTimer = null;
+        let isAudioInit = false, currentTab = 'radio', hls = null;
+        let tvDatabase = [], tvStreams = [], sportsDatabase = [];
+        let radioBaseUrl = 'https://de1.api.radio-browser.info'; // Default fallback
+        let favorites = new Set(), failedStations = new Set(), showFavsOnly = false, showWorkingOnly = false;
+        let currentResults = [], isPseudoFullscreen = false, currentTvAttemptIndex = 0, currentAvailableStreams = [], probeTimer = null;
 
-        // --- 3D Scene ---
-        let scene, camera, renderer, globe;
-        function initThree() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
-            globe = new THREE.Mesh(
-                new THREE.SphereGeometry(2, 64, 64),
-                new THREE.MeshPhongMaterial({ color: 0x0a1a2a, wireframe: true, transparent: true, opacity: 0.1, emissive: 0x002244 })
-            );
-            scene.add(globe);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            camera.position.z = 6;
+        // Resilience Utility: Find fastest Radio server
+        async function discoverRadioServer() {
+            try {
+                const res = await fetch('https://all.api.radio-browser.info/json/servers');
+                const servers = await res.json();
+                if (servers && servers.length > 0) radioBaseUrl = `https://${servers[0].name}`;
+                console.log("Radio Node Established:", radioBaseUrl);
+            } catch (e) { console.warn("Using fallback Radio server."); }
+        }
+
+        // Proxy Logic for Mixed Content (fixes http links on https sites)
+        function proxyUrl(url) {
+            if (!url) return "";
+            if (url.startsWith('http://')) return `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+            return url;
         }
 
         async function initAudio() {
-            if (isAudioInit) {
-                if(audioCtx.state === 'suspended') await audioCtx.resume();
-                return;
-            }
+            if (isAudioInit) { if(audioCtx.state === 'suspended') await audioCtx.resume(); return; }
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 256;
+                analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
                 sourceAudio = audioCtx.createMediaElementSource(audioPlayer);
                 sourceVideo = audioCtx.createMediaElementSource(videoPlayer);
-                sourceAudio.connect(analyser);
-                sourceVideo.connect(analyser);
+                sourceAudio.connect(analyser); sourceVideo.connect(analyser);
                 analyser.connect(audioCtx.destination);
                 isAudioInit = true;
-            } catch (err) { console.warn("Audio Context blocked."); }
+            } catch (err) { console.warn("Audio Context init delayed."); }
         }
 
         async function preloadMediaData() {
             const bootText = document.getElementById('boot-text');
-            bootText.innerText = "Synchronizing Multi-Mesh Discovery...";
-            
+            bootText.innerText = "Synchronizing Global Node List...";
             try {
+                // Discover best Radio Mirror first
+                await discoverRadioServer();
+
                 const [channelsRes, streamsRes] = await Promise.all([
                     fetch('https://iptv-org.github.io/api/channels.json'),
                     fetch('https://iptv-org.github.io/api/streams.json')
                 ]);
                 
-                const rawChannels = await channelsRes.json();
-                const rawStreams = await streamsRes.json();
+                tvDatabase = await channelsRes.json();
+                tvStreams = await streamsRes.json();
                 
-                rawChannels.forEach(c => { c.origin = 'MESH-ALPHA'; });
-                rawStreams.forEach(s => { s.origin = 'MESH-ALPHA'; });
-
-                tvStreams = rawStreams;
-                const streamableChannelIds = new Set(tvStreams.map(s => s.channel));
-                tvDatabase = rawChannels.filter(channel => streamableChannelIds.has(channel.id));
-
-                // RECURSIVE PREMIUM DISCOVERY
-                // This logic hunts for ALL variations of your requested channels
-                const premiumKeywords = ['supersport', 'sky sport', 'premier league', 'laliga', 'la liga', 'nba tv', 'nba channel', 'bein sports'];
-                
+                const premiumKeywords = ['supersport', 'sky sport', 'premier league', 'laliga', 'nba', 'bein sports', 'espn', 'tnt sport'];
                 sportsDatabase = tvDatabase.filter(c => {
-                    const name = (c.name || "").toLowerCase();
-                    const id = (c.id || "").toLowerCase();
-                    
-                    return premiumKeywords.some(kw => name.includes(kw) || id.includes(kw));
+                    const n = (c.name || "").toLowerCase();
+                    const i = (c.id || "").toLowerCase();
+                    return premiumKeywords.some(kw => n.includes(kw) || i.includes(kw));
                 });
 
-                // Weighted Priority Sorting
-                sportsDatabase.sort((a, b) => {
-                    const nA = a.name.toLowerCase();
-                    const nB = b.name.toLowerCase();
-                    
-                    const getWeight = (n) => {
-                        if (n.includes('premier league')) return 1;
-                        if (n.includes('laliga') || n.includes('la liga')) return 2;
-                        if (n.includes('nba')) return 3;
-                        if (n.includes('supersport')) return 4;
-                        if (n.includes('sky sport')) return 5;
-                        return 10;
-                    };
-                    return getWeight(nA) - getWeight(nB);
-                });
-
-                sportsDatabase.forEach(c => {
-                    c.premium = true;
-                    // Mock reliability based on origin/metadata
-                    c.reliability = 40 + Math.floor(Math.random() * 60);
-                });
-
-                bootText.innerText = "Uplink Secure. Mesh Online.";
-                console.log(`Deep Scan: ${sportsDatabase.length} Premium Sports variants isolated.`);
+                bootText.innerText = "Mesh Uplink Established.";
             } catch (e) {
-                bootText.innerText = "Mesh Failure. Re-routing...";
-                bootText.style.color = "#ff4444";
+                bootText.innerText = "Primary Uplink Failed. Using Failover...";
+                bootText.style.color = "#ffaa00";
             }
         }
 
@@ -528,17 +309,15 @@
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'sports-active'));
             const currentBtn = document.getElementById(`tab-${tab}`);
-            
             if (tab === 'sports') {
                 currentBtn.classList.add('sports-active');
-                document.getElementById('video-uplink-label').innerText = "PREMIUM SPORTS MESH";
+                document.getElementById('video-uplink-label').innerText = "PREMIUM SPORTS UPLINK";
                 document.getElementById('video-uplink-label').style.color = "var(--neon-purple)";
             } else {
                 currentBtn.classList.add('active');
                 document.getElementById('video-uplink-label').innerText = "VIDEO UPLINK";
                 document.getElementById('video-uplink-label').style.color = "";
             }
-
             document.getElementById('search-title').innerText = `${tab.toUpperCase()} SCANNER`;
             searchInput.value = "";
             document.getElementById('active-band').innerText = tab.toUpperCase();
@@ -547,65 +326,35 @@
                 document.getElementById('analytics-container').classList.remove('hidden');
                 document.getElementById('tv-panel').classList.add('hidden');
                 document.getElementById('tv-viewport-container').style.display = 'none';
-                videoPlayer.pause();
-                videoPlayer.src = "";
+                videoPlayer.pause(); videoPlayer.src = "";
             } else {
                 document.getElementById('analytics-container').classList.add('hidden');
                 document.getElementById('tv-panel').classList.remove('hidden');
                 document.getElementById('tv-viewport-container').style.display = 'flex';
-                audioPlayer.pause();
-                audioPlayer.src = "";
+                audioPlayer.pause(); audioPlayer.src = "";
             }
             triggerSearch();
         }
 
-        function toggleWorkingFilter() {
-            showWorkingOnly = !showWorkingOnly;
-            document.getElementById('toggle-working').classList.toggle('active', showWorkingOnly);
-            renderList(currentResults, currentTab);
-        }
-
-        function toggleFavsFilter() {
-            showFavsOnly = !showFavsOnly;
-            document.getElementById('toggle-favs').classList.toggle('active', showFavsOnly);
-            renderList(currentResults, currentTab);
-        }
-
-        function toggleFavorite(id, e) {
-            e.stopPropagation();
-            if (favorites.has(id)) favorites.delete(id);
-            else favorites.add(id);
-            renderList(currentResults, currentTab);
-        }
-
-        function triggerSearch() {
-            searchStations(searchInput.value.trim());
-        }
-
         async function searchStations(query) {
             const list = document.getElementById('frequency-list');
-            list.innerHTML = `<div class="p-8 text-center text-[10px] mono text-cyan-500 animate-pulse uppercase">Searching all nodes...</div>`;
+            list.innerHTML = `<div class="p-8 text-center text-[10px] mono text-cyan-500 animate-pulse uppercase">Scanning Nodes...</div>`;
             
             if (currentTab === 'radio') {
                 try {
                     let url = query 
-                        ? `https://de1.api.radio-browser.info/json/stations/search?name=${query}&limit=100&order=clickcount&reverse=true`
-                        : `https://de1.api.radio-browser.info/json/stations/topclick/100`;
-                    const response = await fetch(url);
-                    let results = await response.json();
-                    currentResults = results;
+                        ? `${radioBaseUrl}/json/stations/search?name=${encodeURIComponent(query)}&limit=100&order=clickcount&reverse=true`
+                        : `${radioBaseUrl}/json/stations/topclick/100`;
+                    const res = await fetch(url);
+                    currentResults = await res.json();
                     renderList(currentResults, 'radio');
                 } catch (e) { list.innerHTML = '<div class="p-8 text-center mono text-red-500">Radio Node Timeout</div>'; }
             } else {
                 const targetDb = currentTab === 'sports' ? sportsDatabase : tvDatabase;
-                if (!query) {
-                    currentResults = targetDb.slice(0, 300);
-                } else {
+                if (!query) { currentResults = targetDb.slice(0, 100); }
+                else {
                     const q = query.toLowerCase();
-                    currentResults = targetDb.filter(s => 
-                        (s.name && s.name.toLowerCase().includes(q)) || 
-                        (s.countries && s.countries.some(c => c.toLowerCase().includes(q)))
-                    );
+                    currentResults = targetDb.filter(s => (s.name && s.name.toLowerCase().includes(q)));
                 }
                 renderList(currentResults, 'tv');
             }
@@ -621,39 +370,31 @@
                 return true;
             });
 
-            document.getElementById('result-count').innerText = `${filtered.length} Nodes`;
-            if (filtered.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-[10px] mono text-gray-500 uppercase">Uplink Empty</div>`;
-                return;
-            }
-
+            document.getElementById('result-count').innerText = `${filtered.length} NODES`;
             filtered.forEach(st => {
                 const id = type === 'radio' ? st.stationuuid : st.id;
                 const item = document.createElement('div');
-                item.className = `station-item p-3 cursor-pointer flex flex-col gap-1 pointer-events-auto ${favorites.has(id) ? 'border-amber-900/30' : ''}`;
+                item.className = `station-item p-3 cursor-pointer flex flex-col gap-1 pointer-events-auto`;
                 const favActive = favorites.has(id) ? 'active' : '';
                 
-                const originTag = st.premium ? `<span class="source-tag premium-tag">[SECURE-LINK]</span>` : `<span class="source-tag">${st.origin || 'MESH'}</span>`;
-
                 if (type === 'radio') {
                     item.innerHTML = `
                         <div class="flex justify-between items-start pointer-events-none pr-8">
                             <span class="text-[8px] mono text-cyan-600 truncate w-2/3">${st.country || 'Global'}</span>
-                            <span class="text-[7px] mono text-gray-700">${st.bitrate || 0}kbps</span>
+                            <span class="text-[7px] mono text-gray-700">${st.bitrate || 0}k</span>
                         </div>
                         <div class="text-[11px] font-bold uppercase truncate pointer-events-none">${(st.name || 'Unknown').trim()}</div>
                         <button onclick="toggleFavorite('${id}', event)" class="fav-btn ${favActive}"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
                     `;
                     item.onclick = () => tuneRadio(st, item);
                 } else {
-                    const tagColor = currentTab === 'sports' ? 'text-purple-600' : 'text-amber-600';
                     item.innerHTML = `
                         <div class="flex justify-between items-start pointer-events-none pr-8">
-                            <span class="text-[8px] mono ${tagColor} truncate w-2/3">${(st.countries || ['Global']).join(', ')} ${originTag}</span>
-                            <span class="text-[7px] mono ${failedStations.has(id) ? 'text-red-800' : 'text-gray-700'}">${failedStations.has(id) ? 'OFFLINE' : 'ONLINE'}</span>
+                            <span class="text-[8px] mono text-amber-600 truncate w-2/3">${(st.countries || ['Global']).join(', ')}</span>
+                            <span class="text-[7px] mono ${failedStations.has(id) ? 'text-red-800' : 'text-gray-700'}">${failedStations.has(id) ? 'RETRY_REQD' : 'AVAILABLE'}</span>
                         </div>
                         <div class="text-[11px] font-bold uppercase truncate pointer-events-none">${(st.name || 'Unknown').trim()}</div>
-                        <div class="quality-indicator"><div class="quality-fill" style="width: ${st.reliability || 50}%"></div></div>
+                        <div class="quality-indicator"><div class="quality-fill" style="width: 70%"></div></div>
                         <button onclick="toggleFavorite('${id}', event)" class="fav-btn ${favActive}"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
                     `;
                     item.onclick = () => tuneTV(st, item);
@@ -666,20 +407,18 @@
             await initAudio();
             document.querySelectorAll('.station-item').forEach(d => d.classList.remove('active-station'));
             if (element) element.classList.add('active-station');
-            updateDisplay(st.name, st.tags || st.language, st.country);
+            updateDisplay(st.name, st.tags || "RADIO_SIGNAL", st.country);
             setStatus("WAITING", "amber");
             audioPlayer.src = st.url_resolved || st.url;
             audioPlayer.play().then(() => setStatus("LOCKED", "cyan")).catch(() => setStatus("OFFLINE", "red"));
-            document.getElementById('bitrate-tag').innerText = `${st.bitrate || 128} KBPS`;
         }
 
         async function tuneTV(st, element) {
             await initAudio();
             document.querySelectorAll('.station-item').forEach(d => d.classList.remove('active-station'));
             if (element) element.classList.add('active-station');
-            updateDisplay(st.name, (st.categories || []).join(' '), (st.countries || [])[0] || "Global");
+            updateDisplay(st.name, "VIDEO_CARRIER", (st.countries || [])[0] || "Global");
             
-            // Prioritize HTTPS streams and specific IPTV referrers
             currentAvailableStreams = tvStreams.filter(s => s.channel === st.id)
                 .sort((a, b) => (b.url.startsWith('https') ? 1 : 0) - (a.url.startsWith('https') ? 1 : 0));
                 
@@ -689,35 +428,38 @@
 
         function attemptTvStream(stationId) {
             if (currentTvAttemptIndex >= currentAvailableStreams.length) {
-                setStatus("NODE_FAIL", "red");
-                failedStations.add(stationId);
-                renderList(currentResults, currentTab);
-                return;
+                setStatus("NODE_FAIL", "red"); failedStations.add(stationId); return;
             }
             if (hls) { hls.destroy(); hls = null; }
-            const target = currentAvailableStreams[currentTvAttemptIndex];
-            setStatus(`TUNING [${target.origin || 'MESH'}]`, "amber");
-            clearTimeout(probeTimer);
-            probeTimer = setTimeout(() => { nextAttempt(stationId); }, 9000);
+            const rawUrl = currentAvailableStreams[currentTvAttemptIndex].url;
+            const targetUrl = proxyUrl(rawUrl); // Apply resilience proxy
 
-            if (Hls.isSupported() && (target.url.includes('.m3u8') || target.url.includes('.ts') || target.url.includes('stream'))) {
-                hls = new Hls({ enableWorker: true, lowLatencyMode: true, manifestLoadingMaxRetry: 1 });
-                hls.loadSource(target.url);
+            setStatus(`TUNING [TRY ${currentTvAttemptIndex+1}]`, "amber");
+            clearTimeout(probeTimer);
+            probeTimer = setTimeout(() => { nextAttempt(stationId); }, 8000);
+
+            if (Hls.isSupported() && (targetUrl.includes('.m3u8') || targetUrl.includes('stream'))) {
+                hls = new Hls({ 
+                    enableWorker: true, 
+                    manifestLoadingMaxRetry: 2, 
+                    levelLoadingMaxRetry: 2,
+                    backBufferLength: 60 
+                });
+                hls.loadSource(targetUrl);
                 hls.attachMedia(videoPlayer);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     clearTimeout(probeTimer);
-                    videoPlayer.play().then(() => setStatus("SIGNAL_LOCKED", currentTab === 'sports' ? 'purple' : 'cyan')).catch(() => nextAttempt(stationId));
+                    videoPlayer.play().then(() => setStatus("LOCKED", currentTab === 'sports' ? 'purple' : 'cyan')).catch(() => nextAttempt(stationId));
                 });
-                hls.on(Hls.Events.ERROR, (event, data) => { if(data.fatal) { clearTimeout(probeTimer); nextAttempt(stationId); } });
+                hls.on(Hls.Events.ERROR, (e, data) => { if(data.fatal) { nextAttempt(stationId); } });
             } else {
-                videoPlayer.src = target.url;
-                videoPlayer.play().then(() => { clearTimeout(probeTimer); setStatus("SIGNAL_LOCKED", currentTab === 'sports' ? 'purple' : 'cyan'); }).catch(() => { clearTimeout(probeTimer); nextAttempt(stationId); });
+                videoPlayer.src = targetUrl;
+                videoPlayer.play().then(() => { clearTimeout(probeTimer); setStatus("LOCKED", "cyan"); }).catch(() => nextAttempt(stationId));
             }
         }
 
         function nextAttempt(stationId) {
-            videoPlayer.pause();
-            currentTvAttemptIndex++;
+            videoPlayer.pause(); currentTvAttemptIndex++;
             attemptTvStream(stationId);
         }
 
@@ -730,75 +472,45 @@
 
         function updateDisplay(name, tags, addr) {
             document.getElementById('active-station-name').innerText = (name || 'Unknown').toUpperCase();
-            document.getElementById('active-station-tags').innerText = tags || "SIGNAL_MESHED";
-            document.getElementById('coord-display').innerText = `COORDINATES: ${(Math.random()*180-90).toFixed(4)}, ${(Math.random()*360-180).toFixed(4)} | NODE: ${addr || 'UPLINK_SECURE'}`;
-            globe.rotation.y = Math.random() * 5;
+            document.getElementById('active-station-tags').innerText = tags;
+            document.getElementById('coord-display').innerText = `NODE: ${addr || 'SECURE_RELAY'}`;
         }
 
         function toggleFullscreen() {
-            const viewport = document.getElementById('tv-viewport-container');
+            const v = document.getElementById('tv-viewport-container');
             isPseudoFullscreen = !isPseudoFullscreen;
-            if (isPseudoFullscreen) viewport.classList.add('fullscreen-active');
-            else viewport.classList.remove('fullscreen-active');
+            if (isPseudoFullscreen) v.classList.add('fullscreen-active');
+            else v.classList.remove('fullscreen-active');
         }
 
-        const wCanvas = document.getElementById('waterfall');
-        const wCtx = wCanvas.getContext('2d');
-        wCanvas.width = 300; wCanvas.height = 100;
-        let waterfallData = [];
-
-        function renderLoop() {
-            if (analyser) {
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(dataArray);
-                const bars = document.getElementById('spectrum-bars').children;
-                if (bars && bars.length > 0 && currentTab === 'radio') {
-                    for(let i=0; i<bars.length; i++) {
-                        const val = dataArray[i * 2] || 0;
-                        bars[i].style.height = (val / 255 * 100) + '%';
-                        bars[i].style.backgroundColor = `rgba(0, 242, 255, ${0.1 + (val/255)})`;
-                    }
-                }
-                const row = new Uint8Array(wCanvas.width);
-                for(let i=0; i<wCanvas.width; i++) { row[i] = dataArray[Math.floor(i * (dataArray.length / wCanvas.width))]; }
-                waterfallData.unshift(row);
-                if (waterfallData.length > wCanvas.height) waterfallData.pop();
-                const imgData = wCtx.createImageData(wCanvas.width, wCanvas.height);
-                for (let y = 0; y < waterfallData.length; y++) {
-                    for (let x = 0; x < wCanvas.width; x++) {
-                        const idx = (y * wCanvas.width + x) * 4;
-                        const val = waterfallData[y][x];
-                        imgData.data[idx] = val * 0.1; imgData.data[idx+1] = val * 0.7; imgData.data[idx+2] = val; imgData.data[idx+3] = 255;
-                    }
-                }
-                wCtx.putImageData(imgData, 0, 0);
-            }
-            requestAnimationFrame(renderLoop);
-        }
+        // --- Core Loops ---
+        function triggerSearch() { searchStations(searchInput.value.trim()); }
+        function toggleWorkingFilter() { showWorkingOnly = !showWorkingOnly; document.getElementById('toggle-working').classList.toggle('active'); triggerSearch(); }
+        function toggleFavsFilter() { showFavsOnly = !showFavsOnly; document.getElementById('toggle-favs').classList.toggle('active'); triggerSearch(); }
+        function toggleFavorite(id, e) { e.stopPropagation(); if (favorites.has(id)) favorites.delete(id); else favorites.add(id); triggerSearch(); }
 
         window.onload = () => {
-            initThree(); renderLoop();
-            const spec = document.getElementById('spectrum-bars');
-            for(let i=0; i<60; i++) {
-                const b = document.createElement('div');
-                b.className = 'flex-grow transition-all duration-75';
-                b.style.height = '1%';
-                spec.appendChild(b);
-            }
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            const globe = new THREE.Mesh(new THREE.SphereGeometry(2, 64, 64), new THREE.MeshPhongMaterial({ color: 0x0a1a2a, wireframe: true, transparent: true, opacity: 0.1 }));
+            scene.add(globe); scene.add(new THREE.AmbientLight(0xffffff, 0.8)); camera.position.z = 6;
+
+            function anim() { requestAnimationFrame(anim); globe.rotation.y += 0.001; renderer.render(scene, camera); } anim();
+
             document.getElementById('power-btn').onclick = async () => {
-                document.getElementById('power-btn').disabled = true;
                 await initAudio(); await preloadMediaData();
                 document.getElementById('power-overlay').style.opacity = '0';
                 setTimeout(() => { document.getElementById('power-overlay').remove(); triggerSearch(); }, 500);
             };
-            searchInput.onkeydown = (e) => { if(e.key === 'Enter') triggerSearch(); };
+
+            setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
             document.getElementById('volume-slider').oninput = (e) => {
                 const v = e.target.value; audioPlayer.volume = v; videoPlayer.volume = v;
                 document.getElementById('vol-display').innerText = Math.round(v * 100) + "%";
             };
-            setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
-            function anim() { requestAnimationFrame(anim); globe.rotation.y += 0.0003; renderer.render(scene, camera); }
-            anim();
         };
     </script>
 </body>
