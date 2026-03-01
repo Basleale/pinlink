@@ -3,514 +3,551 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bezelx Global | Universal Receiver V2.1</title>
+    <title>Bezelx Global | Nexus Receiver V3.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600&display=swap');
 
         :root {
             --neon-blue: #00f2ff;
+            --neon-purple: #9d00ff;
             --neon-amber: #ffaa00;
-            --neon-green: #39ff14;
-            --neon-purple: #bc13fe;
-            --bg-dark: #010204;
+            --bg-dark: #050505;
+            --panel-bg: rgba(8, 8, 12, 0.95);
         }
 
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Inter', sans-serif;
+            color: #e0e0e0;
+            font-family: 'Outfit', sans-serif;
             overflow: hidden;
             height: 100vh; width: 100vw;
         }
 
         .mono { font-family: 'Space Mono', monospace; }
 
+        #loader-screen {
+            position: fixed; inset: 0; background: black; z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1s;
+        }
+
+        .load-bar {
+            width: 80%; max-width: 300px; height: 2px; background: rgba(255,255,255,0.1);
+            position: relative; overflow: hidden; margin-top: 20px;
+        }
+        .load-progress {
+            position: absolute; left: 0; top: 0; height: 100%;
+            width: 0%; background: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+            transition: width 0.2s ease;
+        }
+
         #canvas-container {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%; z-index: 1;
+            opacity: 0.2; pointer-events: none;
         }
 
-        .ui-overlay {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%; z-index: 20;
-            pointer-events: none;
-            display: grid;
-            grid-template-columns: 350px 1fr 350px;
-            grid-template-rows: auto 1fr auto;
-            padding: 20px; gap: 20px;
+        .app-container {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            height: 100vh; width: 100vw;
+            background: rgba(0, 242, 255, 0.01);
         }
 
-        .ui-element {
-            pointer-events: auto;
-            background: rgba(5, 7, 12, 0.96);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(0, 242, 255, 0.1);
-            border-radius: 2px;
-            padding: 15px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
-            z-index: 30;
+        @media (min-width: 768px) {
+            .app-container {
+                display: grid;
+                grid-template-columns: 350px 1fr;
+                grid-template-rows: 64px 1fr 40px;
+            }
         }
 
-        #waterfall { width: 100%; height: 100px; background: #000; border: 1px solid #111; image-rendering: pixelated; }
-
-        .active-station { border-color: var(--neon-blue) !important; background: rgba(0, 242, 255, 0.15) !important; }
-
-        #power-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.5s ease;
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(30px);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0, 242, 255, 0.05);
         }
 
-        .station-item { border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s ease; position: relative; }
-        .station-item:hover { border-color: rgba(0, 242, 255, 0.3); background: rgba(255,255,255,0.02); }
-
-        .search-input {
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 242, 255, 0.2);
-            color: var(--neon-blue); font-family: 'Space Mono', monospace; font-size: 11px;
-            padding: 10px 12px; width: 100%; outline: none;
-        }
-
-        .tab-btn {
-            position: relative; padding: 8px 16px; font-size: 10px; font-family: 'Space Mono', monospace;
-            letter-spacing: 0.2em; color: #444; border-bottom: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;
-        }
-        .tab-btn.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
-        .tab-btn.sports-active { color: var(--neon-purple); border-bottom-color: var(--neon-purple); text-shadow: 0 0 10px rgba(188, 19, 254, 0.5); }
-
-        #tv-viewport-container {
-            width: 100%; background: #000; display: none; justify-content: center; align-items: center;
-            position: relative; border: 1px solid rgba(0, 242, 255, 0.2); pointer-events: auto; overflow: hidden;
-        }
+        .sidebar { order: 2; flex: 1; border-right: 1px solid rgba(255,255,255,0.03); }
+        @media (min-width: 768px) { .sidebar { grid-row: 2; grid-column: 1; order: unset; } }
         
-        #video-player { width: 100%; height: 100%; object-fit: contain; }
+        .nav-tabs { display: flex; padding: 12px; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .tab-trigger {
+            flex: 1; padding: 10px 4px; font-size: 9px; text-transform: uppercase;
+            letter-spacing: 1.5px; border: 1px solid rgba(255,255,255,0.05);
+            color: #555; transition: all 0.3s; cursor: pointer; text-align: center;
+        }
+        .tab-trigger.active {
+            color: var(--neon-blue); border-color: var(--neon-blue);
+            background: rgba(0, 242, 255, 0.05);
+            box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .filter-btn {
+            font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
+            padding: 6px 8px; border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.3); color: #555; cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active { border-color: var(--neon-blue); color: var(--neon-blue); background: rgba(0, 242, 255, 0.05); }
+        .filter-btn.active.fav { border-color: var(--neon-amber); color: var(--neon-amber); }
+
+        .channel-list { flex: 1; overflow-y: auto; padding: 12px; }
+
+        .channel-card {
+            padding: 12px; border: 1px solid rgba(255,255,255,0.02);
+            margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px; position: relative;
+        }
+        .channel-card:hover { border-color: rgba(0, 242, 255, 0.2); background: rgba(255,255,255,0.02); }
+        .channel-card.active { border-color: var(--neon-blue); background: rgba(0, 242, 255, 0.08); }
+        .channel-card.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--neon-blue); }
+
+        .fav-toggle {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            color: #333; transition: all 0.2s; padding: 5px; z-index: 20;
+        }
+        .fav-toggle.active { color: var(--neon-amber); }
+
+        .main-viewer { order: 1; flex: 0 0 auto; padding: 12px; position: relative; }
+        @media (min-width: 768px) { .main-viewer { grid-row: 2; grid-column: 2; flex: 1; padding: 24px; order: unset; } }
+
+        #viewport-container {
+            width: 100%; aspect-ratio: 16/9; background: #000; position: relative;
+            border-radius: 4px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(0, 242, 255, 0.1);
+        }
+
+        #main-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+        .meta-header { padding: 0 16px; height: 64px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0, 242, 255, 0.1); }
+        @media (min-width: 768px) { .meta-header { grid-column: 1 / span 2; padding: 0 24px; } }
 
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.15); border-radius: 2px; }
         
         .hidden { display: none !important; }
 
-        .tv-overlay-tag {
-            position: absolute; top: 10px; left: 10px; background: rgba(239, 68, 68, 0.8);
-            color: white; font-size: 8px; font-weight: bold; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; z-index: 40;
+        .loading-shimmer {
+            animation: shimmer 2s infinite linear;
+            background: linear-gradient(90deg, #0a0a0e 25%, #151520 50%, #0a0a0e 75%);
+            background-size: 200% 100%;
         }
 
-        .fav-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #333; transition: all 0.2s; padding: 4px; z-index: 50; }
-        .fav-btn.active { color: var(--neon-amber); }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-        .filter-toggle { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 6px 8px; border: 1px solid #222; cursor: pointer; background: rgba(0,0,0,0.3); }
-        .filter-toggle.active { background: rgba(0, 242, 255, 0.1); border-color: var(--neon-blue); color: var(--neon-blue); }
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #444; display: inline-block;
+            margin-right: 6px; transition: background 0.3s;
+        }
+        .status-online { background: var(--neon-blue) !important; box-shadow: 0 0 8px var(--neon-blue); }
+        .status-probing { background: var(--neon-amber) !important; box-shadow: 0 0 8px var(--neon-amber); animation: pulse 1s infinite; }
 
-        .fullscreen-active { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999 !important; background: black !important; padding: 0 !important; display: flex !important; }
-        #exit-fullscreen-btn { position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px 20px; font-family: 'Space Mono', monospace; font-size: 10px; cursor: pointer; display: none; backdrop-filter: blur(10px); }
-        .fullscreen-active #exit-fullscreen-btn { display: block; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        .source-tag { font-size: 7px; padding: 1px 3px; border-radius: 1px; background: rgba(255,255,255,0.05); color: #555; margin-left: 4px; }
-        .premium-tag { color: var(--neon-purple); font-weight: bold; text-shadow: 0 0 5px rgba(188, 19, 254, 0.3); }
-        
-        .quality-indicator { height: 2px; width: 100%; margin-top: 4px; background: #222; overflow: hidden; }
-        .quality-fill { height: 100%; background: var(--neon-green); box-shadow: 0 0 5px var(--neon-green); }
+        footer { display: none; }
+        @media (min-width: 768px) { footer { display: flex; grid-column: 1 / span 2; } }
     </style>
 </head>
 <body>
 
-    <button id="exit-fullscreen-btn" onclick="toggleFullscreen()">Exit Fullscreen Mode</button>
-
-    <div id="power-overlay">
-        <div class="mb-6 flex flex-col items-center text-center">
-            <div id="boot-text" class="text-cyan-500 mono text-[10px] tracking-[0.5em] uppercase mb-10 animate-pulse">Initializing Global Mesh Resilience...</div>
-            <button id="power-btn" class="group relative px-10 py-4 overflow-hidden border border-cyan-500/50 cursor-pointer">
-                <div class="absolute inset-0 bg-cyan-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                <span class="relative mono text-cyan-400 text-xs tracking-widest uppercase">Establish Link</span>
-            </button>
-        </div>
+    <div id="loader-screen">
+        <div class="mono text-[8px] md:text-[10px] tracking-[0.5em] text-cyan-500 uppercase mb-4 animate-pulse">Establishing Nexus Downlink</div>
+        <div class="load-bar"><div id="load-progress" class="load-progress"></div></div>
+        <div id="load-status" class="mono text-[8px] text-gray-500 mt-4 uppercase">Parsing API Manifests...</div>
     </div>
 
     <div id="canvas-container"></div>
-    <audio id="live-audio-player" crossorigin="anonymous" preload="auto"></audio>
 
-    <div class="ui-overlay">
-        <header class="ui-element col-span-3 flex justify-between items-center py-0 px-6 border-b border-cyan-500/20 h-14">
-            <div class="flex items-center gap-6">
-                <div class="text-xl font-bold mono text-cyan-500 tracking-widest">BEZELX GLOBAL</div>
-                <nav class="flex gap-2 h-full pt-4">
-                    <button id="tab-radio" class="tab-btn active" onclick="switchTab('radio')">RADIO</button>
-                    <button id="tab-tv" class="tab-btn" onclick="switchTab('tv')">TELEVISION</button>
-                    <button id="tab-sports" class="tab-btn" onclick="switchTab('sports')">PREMIUM SPORTS</button>
-                </nav>
+    <div class="app-container">
+        <header class="panel meta-header">
+            <div class="flex items-center gap-4 md:gap-8">
+                <h1 class="text-sm md:text-lg font-bold tracking-[0.3em] text-white mono">BEZELX<span class="text-cyan-500"> GLOBAL</span></h1>
             </div>
-            <div class="flex gap-10 mono text-[10px] text-gray-500">
-                <div class="text-right">
-                    <div class="uppercase opacity-40">Band Status</div>
-                    <div id="stream-status" class="text-cyan-400">READY</div>
+            <div class="flex items-center gap-4 md:gap-6">
+                <div class="text-right hidden sm:block">
+                    <div class="text-[8px] text-gray-600 uppercase mono">API_STATUS</div>
+                    <div id="auth-indicator" class="text-[9px] text-emerald-400 mono">UPLINK_STABLE</div>
                 </div>
-                <div id="current-time" class="text-right tabular-nums hidden md:block">00:00:00</div>
+                <div id="sys-clock" class="text-sm md:text-xl font-light mono tabular-nums">00:00:00</div>
             </div>
         </header>
 
-        <aside class="ui-element flex flex-col gap-4 overflow-hidden">
-            <div class="flex flex-col gap-3">
-                <h2 id="search-title" class="text-[9px] font-bold mono text-cyan-500 tracking-[0.2em] uppercase">Scanner</h2>
-                <input type="text" id="search-input" placeholder="Search across all nodes..." class="search-input" autocomplete="off">
+        <aside class="panel sidebar">
+            <nav class="nav-tabs">
+                <div onclick="setCategory('sports')" id="tab-sports" class="tab-trigger active">Sports</div>
+                <div onclick="setCategory('entertainment')" id="tab-entertainment" class="tab-trigger">Ent.</div>
+                <div onclick="setCategory('news')" id="tab-news" class="tab-trigger">News</div>
+            </nav>
+            <div class="px-3 pt-3 flex flex-col gap-2">
+                <input type="text" id="search-box" placeholder="Scan Nodes..." class="w-full bg-black/50 border border-white/5 p-2.5 text-[10px] mono text-cyan-500 outline-none focus:border-cyan-500/50 rounded-sm">
                 <div class="flex gap-2">
-                    <button onclick="triggerSearch()" class="flex-grow py-2 bg-cyan-950/30 border border-cyan-900 text-[10px] mono text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all">RESCAN</button>
-                </div>
-                <div class="flex gap-2">
-                    <button id="toggle-working" onclick="toggleWorkingFilter()" class="filter-toggle flex-grow">Stable Only</button>
-                    <button id="toggle-favs" onclick="toggleFavsFilter()" class="filter-toggle flex-grow">Favorites</button>
+                    <button id="toggle-streams" onclick="toggleStreamsOnly()" class="filter-btn flex-grow">Live Only</button>
+                    <button id="toggle-favs" onclick="toggleFavsOnly()" class="filter-btn fav flex-grow">Favorites</button>
                 </div>
             </div>
-
-            <div class="flex-grow flex flex-col overflow-hidden mt-2">
-                <h2 class="text-[9px] font-bold mono text-gray-500 mb-2 uppercase flex justify-between">
-                    <span>Nodes Online</span>
-                    <span id="result-count">0 nodes</span>
-                </h2>
-                <div id="frequency-list" class="space-y-1 overflow-y-auto flex-grow pr-1">
-                    <div class="p-8 text-center text-[10px] mono text-gray-600 italic">Waiting for command...</div>
-                </div>
+            <div id="channel-list" class="channel-list">
+                <div class="p-8 text-center text-[10px] mono text-gray-600 animate-pulse">SYNCHRONIZING...</div>
             </div>
         </aside>
 
-        <main class="flex flex-col justify-end items-center pb-6 pointer-events-none relative overflow-hidden">
-            <div class="bg-black/80 border border-cyan-500/10 p-5 rounded-sm min-w-[340px] text-center backdrop-blur-3xl shadow-2xl pointer-events-auto">
-                <div class="flex justify-center gap-1 mb-2">
-                    <div class="w-1 h-3 bg-cyan-500"></div>
-                    <div class="w-1 h-3 bg-cyan-500/50"></div>
-                    <div class="w-1 h-3 bg-cyan-500/20"></div>
+        <main class="main-viewer">
+            <div id="viewport-container">
+                <video id="main-video" autoplay controls playsinline preload="auto" class="w-full h-full"></video>
+                <div id="player-shimmer" class="absolute inset-0 z-0 loading-shimmer hidden"></div>
+                
+                <div id="signal-info" class="absolute top-2 left-2 md:top-4 md:left-4 pointer-events-none bg-black/70 p-2.5 rounded-sm backdrop-blur-md border border-white/5">
+                    <div class="flex items-center mb-1">
+                        <span class="status-dot" id="stream-dot"></span>
+                        <span id="playing-title" class="text-[9px] md:text-xs uppercase font-bold text-white mono tracking-wider">Idle Mode</span>
+                    </div>
+                    <div id="playing-id" class="text-[7px] md:text-[9px] text-gray-500 mono">NO_ACTIVE_DOWNLINK</div>
                 </div>
-                <div id="active-station-name" class="text-lg font-light text-white mb-1 tracking-tight leading-tight uppercase">Tuning...</div>
-                <div id="active-station-tags" class="text-[8px] mono text-cyan-600 uppercase mb-3 truncate">Select a Signal</div>
-                <div id="coord-display" class="text-[9px] mono text-gray-500 py-1 border-t border-white/5 uppercase">COORDINATES: --.----, --.----</div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-start">
+                <div class="max-w-[70%]">
+                    <h2 id="detail-name" class="text-base md:text-xl font-semibold text-white truncate uppercase tracking-tight">Nexus Receiver 3.5</h2>
+                    <p id="detail-tags" class="text-[9px] md:text-xs text-cyan-800 mono mt-1 uppercase">Select a node to begin transmission</p>
+                </div>
+                <div class="flex flex-col items-end gap-1 md:gap-2">
+                    <div class="flex gap-1 md:gap-2">
+                        <div class="px-2 py-1 bg-white/5 border border-white/10 text-[7px] md:text-[8px] mono uppercase">HLS_v5</div>
+                        <div id="stream-quality" class="px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 text-[7px] md:text-[8px] text-cyan-400 mono uppercase">Auto</div>
+                    </div>
+                    <div id="attempt-info" class="text-[8px] md:text-[9px] text-gray-600 mono uppercase">Handshake Ready</div>
+                </div>
             </div>
         </main>
 
-        <aside class="ui-element flex flex-col gap-6 overflow-hidden">
-            <div id="analytics-container" class="flex flex-col gap-6 h-full">
-                <div class="flex-grow">
-                    <h2 class="text-[9px] font-bold mono text-cyan-500 mb-3 tracking-widest uppercase flex justify-between">
-                        <span>Analytics</span>
-                        <span id="bitrate-tag" class="text-cyan-900 uppercase">0 KBPS</span>
-                    </h2>
-                    <div id="spectrum-bars" class="flex items-end gap-[1px] h-28 bg-black/40 rounded p-1 overflow-hidden"></div>
-                </div>
-                <div class="border-t border-cyan-950 pt-4">
-                    <h2 class="text-[9px] font-bold mono text-cyan-500 mb-3 tracking-widest uppercase">Waterfall</h2>
-                    <canvas id="waterfall"></canvas>
-                </div>
-            </div>
-
-            <div id="tv-panel" class="hidden flex-grow flex flex-col gap-4 overflow-hidden">
-                <h2 class="text-[9px] font-bold mono text-cyan-500 mb-0 tracking-widest uppercase flex justify-between">
-                    <span id="video-uplink-label">Video Downlink</span>
-                    <span class="text-cyan-900 uppercase">Uplink_Stable</span>
-                </h2>
-                <div id="tv-viewport-container" class="flex-grow border border-cyan-500/30 rounded aspect-video bg-black relative flex items-center justify-center">
-                    <video id="video-player" controls autoplay class="w-full h-full"></video>
-                    <div id="live-indicator" class="tv-overlay-tag">Live</div>
-                </div>
-                <button onclick="toggleFullscreen()" class="w-full py-3 border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 mono text-[10px] uppercase tracking-widest hover:bg-cyan-500 hover:text-black transition-all">Fullscreen</button>
-            </div>
-            
-            <div class="mt-auto border-t border-cyan-950 pt-4">
-                <div class="flex justify-between text-[9px] mono text-amber-500 mb-2 uppercase font-bold">
-                    <span>Gain</span>
-                    <span id="vol-display">50%</span>
-                </div>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-amber-500 cursor-pointer">
-            </div>
-        </aside>
-
-        <footer class="col-span-3 flex justify-between items-center px-4 py-1 text-[8px] mono text-gray-700 uppercase tracking-widest">
-            <div>Link: Secure_Relay_Active</div>
-            <div class="flex gap-4">
-                <span>Buffer: <span id="buffer-val" class="text-cyan-900">0.0s</span></span>
-                <span>Band: <span id="active-band" class="text-cyan-900 uppercase">RADIO</span></span>
+        <footer class="panel flex items-center justify-between px-6 border-t border-white/5 text-[8px] mono text-gray-800 uppercase tracking-[0.3em]">
+            <div>© BEZELX GLOBAL // NEXUS INFRASTRUCTURE</div>
+            <div class="flex gap-10">
+                <span>BUFFER: <span id="buffer-stat" class="text-cyan-900">0.0S</span></span>
+                <span>REG: GLOBAL_RELAY_01</span>
             </div>
         </footer>
     </div>
 
     <script>
-        const audioPlayer = document.getElementById('live-audio-player');
-        const videoPlayer = document.getElementById('video-player');
-        const searchInput = document.getElementById('search-input');
+        // API Configuration
+        let channelsData = [];
+        let streamsData = [];
+        let hls = null;
+        let currentCategory = 'sports';
+        let streamsOnly = false;
+        let favsOnly = false;
+        let favorites = new Set(JSON.parse(localStorage.getItem('bezelx_favs') || '[]'));
         
-        let audioCtx, analyser, sourceAudio, sourceVideo;
-        let isAudioInit = false, currentTab = 'radio', hls = null;
-        let tvDatabase = [], tvStreams = [], sportsDatabase = [];
-        let radioBaseUrl = 'https://de1.api.radio-browser.info'; // Default fallback
-        let favorites = new Set(), failedStations = new Set(), showFavsOnly = false, showWorkingOnly = false;
-        let currentResults = [], isPseudoFullscreen = false, currentTvAttemptIndex = 0, currentAvailableStreams = [], probeTimer = null;
+        // Tuning State
+        let currentProbingIndex = 0;
+        let currentAvailableStreams = [];
+        let probeTimeout = null;
 
-        // Resilience Utility: Find fastest Radio server
-        async function discoverRadioServer() {
+        const video = document.getElementById('main-video');
+
+        async function fetchGlobalAPI() {
             try {
-                const res = await fetch('https://all.api.radio-browser.info/json/servers');
-                const servers = await res.json();
-                if (servers && servers.length > 0) radioBaseUrl = `https://${servers[0].name}`;
-                console.log("Radio Node Established:", radioBaseUrl);
-            } catch (e) { console.warn("Using fallback Radio server."); }
-        }
-
-        // Proxy Logic for Mixed Content (fixes http links on https sites)
-        function proxyUrl(url) {
-            if (!url) return "";
-            if (url.startsWith('http://')) return `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
-            return url;
-        }
-
-        async function initAudio() {
-            if (isAudioInit) { if(audioCtx.state === 'suspended') await audioCtx.resume(); return; }
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
-                sourceAudio = audioCtx.createMediaElementSource(audioPlayer);
-                sourceVideo = audioCtx.createMediaElementSource(videoPlayer);
-                sourceAudio.connect(analyser); sourceVideo.connect(analyser);
-                analyser.connect(audioCtx.destination);
-                isAudioInit = true;
-            } catch (err) { console.warn("Audio Context init delayed."); }
-        }
-
-        async function preloadMediaData() {
-            const bootText = document.getElementById('boot-text');
-            bootText.innerText = "Synchronizing Global Node List...";
-            try {
-                // Discover best Radio Mirror first
-                await discoverRadioServer();
-
                 const [channelsRes, streamsRes] = await Promise.all([
                     fetch('https://iptv-org.github.io/api/channels.json'),
                     fetch('https://iptv-org.github.io/api/streams.json')
                 ]);
-                
-                tvDatabase = await channelsRes.json();
-                tvStreams = await streamsRes.json();
-                
-                const premiumKeywords = ['supersport', 'sky sport', 'premier league', 'laliga', 'nba', 'bein sports', 'espn', 'tnt sport'];
-                sportsDatabase = tvDatabase.filter(c => {
-                    const n = (c.name || "").toLowerCase();
-                    const i = (c.id || "").toLowerCase();
-                    return premiumKeywords.some(kw => n.includes(kw) || i.includes(kw));
-                });
-
-                bootText.innerText = "Mesh Uplink Established.";
+                channelsData = await channelsRes.json();
+                streamsData = await streamsRes.json();
             } catch (e) {
-                bootText.innerText = "Primary Uplink Failed. Using Failover...";
-                bootText.style.color = "#ffaa00";
+                console.error("Critical API Failure", e);
+                document.getElementById('load-status').innerText = "FAILOVER REQUIRED...";
             }
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'sports-active'));
-            const currentBtn = document.getElementById(`tab-${tab}`);
-            if (tab === 'sports') {
-                currentBtn.classList.add('sports-active');
-                document.getElementById('video-uplink-label').innerText = "PREMIUM SPORTS UPLINK";
-                document.getElementById('video-uplink-label').style.color = "var(--neon-purple)";
-            } else {
-                currentBtn.classList.add('active');
-                document.getElementById('video-uplink-label').innerText = "VIDEO UPLINK";
-                document.getElementById('video-uplink-label').style.color = "";
-            }
-            document.getElementById('search-title').innerText = `${tab.toUpperCase()} SCANNER`;
-            searchInput.value = "";
-            document.getElementById('active-band').innerText = tab.toUpperCase();
-
-            if (tab === 'radio') {
-                document.getElementById('analytics-container').classList.remove('hidden');
-                document.getElementById('tv-panel').classList.add('hidden');
-                document.getElementById('tv-viewport-container').style.display = 'none';
-                videoPlayer.pause(); videoPlayer.src = "";
-            } else {
-                document.getElementById('analytics-container').classList.add('hidden');
-                document.getElementById('tv-panel').classList.remove('hidden');
-                document.getElementById('tv-viewport-container').style.display = 'flex';
-                audioPlayer.pause(); audioPlayer.src = "";
-            }
-            triggerSearch();
-        }
-
-        async function searchStations(query) {
-            const list = document.getElementById('frequency-list');
-            list.innerHTML = `<div class="p-8 text-center text-[10px] mono text-cyan-500 animate-pulse uppercase">Scanning Nodes...</div>`;
+        function getFilteredChannels(category) {
+            if (channelsData.length === 0) return [];
             
-            if (currentTab === 'radio') {
-                try {
-                    let url = query 
-                        ? `${radioBaseUrl}/json/stations/search?name=${encodeURIComponent(query)}&limit=100&order=clickcount&reverse=true`
-                        : `${radioBaseUrl}/json/stations/topclick/100`;
-                    const res = await fetch(url);
-                    currentResults = await res.json();
-                    renderList(currentResults, 'radio');
-                } catch (e) { list.innerHTML = '<div class="p-8 text-center mono text-red-500">Radio Node Timeout</div>'; }
-            } else {
-                const targetDb = currentTab === 'sports' ? sportsDatabase : tvDatabase;
-                if (!query) { currentResults = targetDb.slice(0, 100); }
-                else {
-                    const q = query.toLowerCase();
-                    currentResults = targetDb.filter(s => (s.name && s.name.toLowerCase().includes(q)));
-                }
-                renderList(currentResults, 'tv');
+            let filtered = [];
+            if (category === 'sports') {
+                const sportKeys = ['supersport', 'sky sport', 'espn', 'bein', 'nba', 'premier league', 'football', 'tnt sport', 'laliga', 'serie a', 'f1'];
+                filtered = channelsData.filter(c => {
+                    const n = (c.name || '').toLowerCase();
+                    return sportKeys.some(k => n.includes(k));
+                }).slice(0, 100);
+            } 
+            else if (category === 'entertainment') {
+                const entKeys = ['mbc 2', 'mbc 3', 'mbc max', 'disney', 'nick', 'cartoon network', 'mtv', 'hbo'];
+                filtered = channelsData.filter(c => {
+                    const n = (c.name || '').toLowerCase();
+                    return entKeys.some(k => n.includes(k));
+                });
             }
-        }
+            else if (category === 'news') {
+                const newsKeys = ['bbc world', 'bbc news', 'fox news', 'cnn', 'france 24', 'al jazeera', 'reuters', 'bloomberg'];
+                filtered = channelsData.filter(c => {
+                    const n = (c.name || '').toLowerCase();
+                    return newsKeys.some(k => n.includes(k));
+                });
+            }
 
-        function renderList(data, type) {
-            const list = document.getElementById('frequency-list');
-            list.innerHTML = "";
-            const filtered = data.filter(st => {
-                const id = type === 'radio' ? st.stationuuid : st.id;
-                if (showFavsOnly && !favorites.has(id)) return false;
-                if (showWorkingOnly && failedStations.has(id)) return false;
+            return filtered.filter(c => {
+                if (favsOnly && !favorites.has(c.id)) return false;
+                if (streamsOnly && streamsData.filter(s => s.channel === c.id).length === 0) return false;
                 return true;
             });
+        }
 
-            document.getElementById('result-count').innerText = `${filtered.length} NODES`;
-            filtered.forEach(st => {
-                const id = type === 'radio' ? st.stationuuid : st.id;
-                const item = document.createElement('div');
-                item.className = `station-item p-3 cursor-pointer flex flex-col gap-1 pointer-events-auto`;
-                const favActive = favorites.has(id) ? 'active' : '';
+        function renderList(filter = '') {
+            const list = document.getElementById('channel-list');
+            list.innerHTML = '';
+            
+            const filtered = getFilteredChannels(currentCategory).filter(c => 
+                c.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center text-[10px] mono text-gray-700">NO NODES FOUND</div>';
+                return;
+            }
+
+            filtered.forEach(ch => {
+                const card = document.createElement('div');
+                card.className = 'channel-card';
+                card.onclick = () => startTuning(ch, card);
                 
-                if (type === 'radio') {
-                    item.innerHTML = `
-                        <div class="flex justify-between items-start pointer-events-none pr-8">
-                            <span class="text-[8px] mono text-cyan-600 truncate w-2/3">${st.country || 'Global'}</span>
-                            <span class="text-[7px] mono text-gray-700">${st.bitrate || 0}k</span>
-                        </div>
-                        <div class="text-[11px] font-bold uppercase truncate pointer-events-none">${(st.name || 'Unknown').trim()}</div>
-                        <button onclick="toggleFavorite('${id}', event)" class="fav-btn ${favActive}"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
-                    `;
-                    item.onclick = () => tuneRadio(st, item);
-                } else {
-                    item.innerHTML = `
-                        <div class="flex justify-between items-start pointer-events-none pr-8">
-                            <span class="text-[8px] mono text-amber-600 truncate w-2/3">${(st.countries || ['Global']).join(', ')}</span>
-                            <span class="text-[7px] mono ${failedStations.has(id) ? 'text-red-800' : 'text-gray-700'}">${failedStations.has(id) ? 'RETRY_REQD' : 'AVAILABLE'}</span>
-                        </div>
-                        <div class="text-[11px] font-bold uppercase truncate pointer-events-none">${(st.name || 'Unknown').trim()}</div>
-                        <div class="quality-indicator"><div class="quality-fill" style="width: 70%"></div></div>
-                        <button onclick="toggleFavorite('${id}', event)" class="fav-btn ${favActive}"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
-                    `;
-                    item.onclick = () => tuneTV(st, item);
-                }
-                list.appendChild(item);
+                const streams = streamsData.filter(s => s.channel === ch.id);
+                const statusColor = streams.length > 0 ? 'text-cyan-500' : 'text-gray-700';
+                const isFav = favorites.has(ch.id);
+
+                card.innerHTML = `
+                    <div class="w-8 h-8 flex items-center justify-center bg-black/50 border border-white/5 rounded-sm overflow-hidden">
+                        ${ch.logo ? `<img src="${ch.logo}" class="w-full h-full object-contain opacity-70">` : `<span class="mono text-[8px] text-gray-800">U</span>`}
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="text-[10px] font-bold uppercase truncate text-white">${ch.name}</div>
+                        <div class="text-[7px] mono ${statusColor} truncate uppercase">${streams.length} STREAMS AVAILABLE</div>
+                    </div>
+                    <button onclick="toggleFavorite('${ch.id}', event)" class="fav-toggle ${isFav ? 'active' : ''}">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                `;
+                list.appendChild(card);
             });
         }
 
-        async function tuneRadio(st, element) {
-            await initAudio();
-            document.querySelectorAll('.station-item').forEach(d => d.classList.remove('active-station'));
-            if (element) element.classList.add('active-station');
-            updateDisplay(st.name, st.tags || "RADIO_SIGNAL", st.country);
-            setStatus("WAITING", "amber");
-            audioPlayer.src = st.url_resolved || st.url;
-            audioPlayer.play().then(() => setStatus("LOCKED", "cyan")).catch(() => setStatus("OFFLINE", "red"));
-        }
+        window.toggleFavorite = (id, e) => {
+            e.stopPropagation();
+            if (favorites.has(id)) favorites.delete(id);
+            else favorites.add(id);
+            localStorage.setItem('bezelx_favs', JSON.stringify([...favorites]));
+            renderList(document.getElementById('search-box').value);
+        };
 
-        async function tuneTV(st, element) {
-            await initAudio();
-            document.querySelectorAll('.station-item').forEach(d => d.classList.remove('active-station'));
-            if (element) element.classList.add('active-station');
-            updateDisplay(st.name, "VIDEO_CARRIER", (st.countries || [])[0] || "Global");
-            
-            currentAvailableStreams = tvStreams.filter(s => s.channel === st.id)
-                .sort((a, b) => (b.url.startsWith('https') ? 1 : 0) - (a.url.startsWith('https') ? 1 : 0));
-                
-            currentTvAttemptIndex = 0;
-            attemptTvStream(st.id);
-        }
+        window.toggleStreamsOnly = () => {
+            streamsOnly = !streamsOnly;
+            document.getElementById('toggle-streams').classList.toggle('active');
+            renderList(document.getElementById('search-box').value);
+        };
 
-        function attemptTvStream(stationId) {
-            if (currentTvAttemptIndex >= currentAvailableStreams.length) {
-                setStatus("NODE_FAIL", "red"); failedStations.add(stationId); return;
+        window.toggleFavsOnly = () => {
+            favsOnly = !favsOnly;
+            document.getElementById('toggle-favs').classList.toggle('active');
+            renderList(document.getElementById('search-box').value);
+        };
+
+        function startTuning(ch, el) {
+            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            currentAvailableStreams = streamsData.filter(s => s.channel === ch.id);
+            if (currentAvailableStreams.length === 0) {
+                updateUIForFailure(ch, "OFFLINE");
+                return;
             }
+
+            // Sort by HLS priority
+            currentAvailableStreams.sort((a, b) => {
+                if (a.url.includes('m3u8')) return -1;
+                if (b.url.includes('m3u8')) return 1;
+                return 0;
+            });
+
+            currentProbingIndex = 0;
+            document.getElementById('playing-title').innerText = ch.name;
+            document.getElementById('playing-id').innerText = `UPLINK: ${ch.id.toUpperCase()}`;
+            document.getElementById('detail-name').innerText = ch.name;
+            document.getElementById('detail-tags').innerText = `${ch.categories?.join(', ') || 'General'} | ${ch.country || 'Global'}`;
+            
+            performHandshake(ch);
+        }
+
+        function performHandshake(ch) {
+            if (currentProbingIndex >= currentAvailableStreams.length) {
+                updateUIForFailure(ch, "NODE_FAILURE");
+                return;
+            }
+
+            const stream = currentAvailableStreams[currentProbingIndex];
+            const attemptInfo = document.getElementById('attempt-info');
+            attemptInfo.innerText = `PROBING NODE ${currentProbingIndex + 1}/${currentAvailableStreams.length}`;
+            attemptInfo.style.color = "var(--neon-amber)";
+
+            document.getElementById('player-shimmer').classList.remove('hidden');
+            const dot = document.getElementById('stream-dot');
+            dot.className = "status-dot status-probing";
+
             if (hls) { hls.destroy(); hls = null; }
-            const rawUrl = currentAvailableStreams[currentTvAttemptIndex].url;
-            const targetUrl = proxyUrl(rawUrl); // Apply resilience proxy
+            clearTimeout(probeTimeout);
 
-            setStatus(`TUNING [TRY ${currentTvAttemptIndex+1}]`, "amber");
-            clearTimeout(probeTimer);
-            probeTimer = setTimeout(() => { nextAttempt(stationId); }, 8000);
+            // Proxy logic to handle secure context blocks
+            let finalUrl = stream.url;
+            if (finalUrl.startsWith('http://')) {
+                finalUrl = `https://corsproxy.io/?url=${encodeURIComponent(finalUrl)}`;
+            }
 
-            if (Hls.isSupported() && (targetUrl.includes('.m3u8') || targetUrl.includes('stream'))) {
+            // Timeout if stream hangs without triggering HLS error
+            probeTimeout = setTimeout(() => {
+                console.warn("Probe timeout on index", currentProbingIndex);
+                nextAttempt(ch);
+            }, 8000);
+
+            if (Hls.isSupported()) {
                 hls = new Hls({ 
                     enableWorker: true, 
-                    manifestLoadingMaxRetry: 2, 
-                    levelLoadingMaxRetry: 2,
-                    backBufferLength: 60 
+                    capLevelToPlayerSize: true,
+                    manifestLoadingMaxRetry: 1,
+                    levelLoadingMaxRetry: 1
                 });
-                hls.loadSource(targetUrl);
-                hls.attachMedia(videoPlayer);
+                hls.loadSource(finalUrl);
+                hls.attachMedia(video);
+                
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    clearTimeout(probeTimer);
-                    videoPlayer.play().then(() => setStatus("LOCKED", currentTab === 'sports' ? 'purple' : 'cyan')).catch(() => nextAttempt(stationId));
+                    clearTimeout(probeTimeout);
+                    video.play().then(() => {
+                        onSuccess();
+                    }).catch(() => {
+                        // Sometimes browser blocks auto-play even after manifest
+                        onSuccess(); 
+                    });
                 });
-                hls.on(Hls.Events.ERROR, (e, data) => { if(data.fatal) { nextAttempt(stationId); } });
-            } else {
-                videoPlayer.src = targetUrl;
-                videoPlayer.play().then(() => { clearTimeout(probeTimer); setStatus("LOCKED", "cyan"); }).catch(() => nextAttempt(stationId));
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        clearTimeout(probeTimeout);
+                        nextAttempt(ch);
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = finalUrl;
+                video.addEventListener('loadedmetadata', function successListener() {
+                    clearTimeout(probeTimeout);
+                    video.play();
+                    onSuccess();
+                    video.removeEventListener('loadedmetadata', successListener);
+                }, { once: true });
+                
+                video.addEventListener('error', function errorListener() {
+                    clearTimeout(probeTimeout);
+                    nextAttempt(ch);
+                    video.removeEventListener('error', errorListener);
+                }, { once: true });
             }
         }
 
-        function nextAttempt(stationId) {
-            videoPlayer.pause(); currentTvAttemptIndex++;
-            attemptTvStream(stationId);
+        function onSuccess() {
+            document.getElementById('player-shimmer').classList.add('hidden');
+            const dot = document.getElementById('stream-dot');
+            dot.className = "status-dot status-online";
+            const attemptInfo = document.getElementById('attempt-info');
+            attemptInfo.innerText = "LINK ESTABLISHED";
+            attemptInfo.style.color = "var(--neon-blue)";
         }
 
-        function setStatus(txt, color) {
-            const el = document.getElementById('stream-status');
-            el.innerText = txt.toUpperCase();
-            if(color === 'purple') el.style.color = 'var(--neon-purple)';
-            else el.style.color = color === 'cyan' ? 'var(--neon-blue)' : (color === 'amber' ? 'var(--neon-amber)' : '#ef4444');
+        function nextAttempt(ch) {
+            currentProbingIndex++;
+            performHandshake(ch);
         }
 
-        function updateDisplay(name, tags, addr) {
-            document.getElementById('active-station-name').innerText = (name || 'Unknown').toUpperCase();
-            document.getElementById('active-station-tags').innerText = tags;
-            document.getElementById('coord-display').innerText = `NODE: ${addr || 'SECURE_RELAY'}`;
+        function updateUIForFailure(ch, msg) {
+            document.getElementById('playing-title').innerText = msg;
+            document.getElementById('stream-dot').className = "status-dot";
+            document.getElementById('attempt-info').innerText = "HANDSHAKE FAILED";
+            document.getElementById('attempt-info').style.color = "rgba(255,0,0,0.5)";
+            document.getElementById('player-shimmer').classList.add('hidden');
         }
 
-        function toggleFullscreen() {
-            const v = document.getElementById('tv-viewport-container');
-            isPseudoFullscreen = !isPseudoFullscreen;
-            if (isPseudoFullscreen) v.classList.add('fullscreen-active');
-            else v.classList.remove('fullscreen-active');
+        window.setCategory = (cat) => {
+            currentCategory = cat;
+            document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${cat}`).classList.add('active');
+            renderList();
+        };
+
+        async function initApp() {
+            const steps = [
+                { p: 20, s: "Synthesizing Neural Gateways..." },
+                { p: 60, s: "Synchronizing Global API Nodes..." },
+                { p: 90, s: "Validating Handshake Protocols..." },
+                { p: 100, s: "Uplink Secure." }
+            ];
+
+            const progressEl = document.getElementById('load-progress');
+            const statusEl = document.getElementById('load-status');
+
+            const apiPromise = fetchGlobalAPI();
+
+            for (const step of steps) {
+                progressEl.style.width = step.p + "%";
+                statusEl.innerText = step.s;
+                await new Promise(r => setTimeout(r, 600));
+            }
+
+            await apiPromise;
+            
+            document.getElementById('loader-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loader-screen').classList.add('hidden');
+                renderList();
+            }, 1000);
         }
 
-        // --- Core Loops ---
-        function triggerSearch() { searchStations(searchInput.value.trim()); }
-        function toggleWorkingFilter() { showWorkingOnly = !showWorkingOnly; document.getElementById('toggle-working').classList.toggle('active'); triggerSearch(); }
-        function toggleFavsFilter() { showFavsOnly = !showFavsOnly; document.getElementById('toggle-favs').classList.toggle('active'); triggerSearch(); }
-        function toggleFavorite(id, e) { e.stopPropagation(); if (favorites.has(id)) favorites.delete(id); else favorites.add(id); triggerSearch(); }
+        document.getElementById('search-box').oninput = (e) => renderList(e.target.value);
 
         window.onload = () => {
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
-            const globe = new THREE.Mesh(new THREE.SphereGeometry(2, 64, 64), new THREE.MeshPhongMaterial({ color: 0x0a1a2a, wireframe: true, transparent: true, opacity: 0.1 }));
-            scene.add(globe); scene.add(new THREE.AmbientLight(0xffffff, 0.8)); camera.position.z = 6;
+            const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 2), new THREE.MeshPhongMaterial({ color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.05 }));
+            scene.add(mesh);
+            const light = new THREE.PointLight(0x00f2ff, 1);
+            light.position.set(10, 10, 10);
+            scene.add(light);
+            camera.position.z = 20;
 
-            function anim() { requestAnimationFrame(anim); globe.rotation.y += 0.001; renderer.render(scene, camera); } anim();
+            function animate() {
+                requestAnimationFrame(animate);
+                mesh.rotation.x += 0.001;
+                mesh.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            animate();
 
-            document.getElementById('power-btn').onclick = async () => {
-                await initAudio(); await preloadMediaData();
-                document.getElementById('power-overlay').style.opacity = '0';
-                setTimeout(() => { document.getElementById('power-overlay').remove(); triggerSearch(); }, 500);
-            };
+            setInterval(() => {
+                document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+                if (video.buffered.length) {
+                    document.getElementById('buffer-stat').innerText = video.buffered.end(0).toFixed(1) + "S";
+                }
+            }, 1000);
 
-            setInterval(() => { document.getElementById('current-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
-            document.getElementById('volume-slider').oninput = (e) => {
-                const v = e.target.value; audioPlayer.volume = v; videoPlayer.volume = v;
-                document.getElementById('vol-display').innerText = Math.round(v * 100) + "%";
-            };
+            initApp();
         };
     </script>
 </body>
