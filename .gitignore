@@ -1,3 +1,21 @@
-# Godot 4+ specific ignores
-.godot/
-/android/
+# Dependency folders (Massive files that npm downloads)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production build outputs
+client/dist/
+client/build/
+
+# Secret local environment variables (CRUCIAL)
+.env
+.env.local
+server/.env
+client/.env
+
+# Operating system junk
+.DS_Store
+Thumbs.db
+
+
+####### not the final setup bro
